@@ -9,6 +9,12 @@ class TraversableMatchersTest extends JunitMatchers {
 
   @Test
   def forAll() {
+    List(1,2,3,4) must forAll(be_<(10))
+    List(2,4,6,8) must forAll(be_<(10) and beLike("an even number") { case n if n % 2 == 0 => })
+    Set(2,4,6,8) must forAll(be_<(10) and beLike("an even number") { case n if n % 2 == 0 => })
+
+    List() must forAll(be_<(10))
+
     {List(1,2,30,40) must forAll(be_<(10))} must throwAn[AssertionError].withMessage(
       "List(1, 2, 30, 40) is not valid: 30 is not < 10")
 
