@@ -159,7 +159,7 @@ In the scala world the matchers offer come in
 Those are full blown test frameworks, and their matchers are tightly integrated with the framework, making them slightly more complex (to my taste at least!), and harder to use standalone.
 
 
-## Finally.. where the hell does the name come from??
+## Ok.. but where the hell does the name come from??
 
 If you're wondering then I guess you've missed a piece of cinematography! 
 I can just highly recommend that you check [this](http://en.wikipedia.org/wiki/Machete_%28film%29) out.
