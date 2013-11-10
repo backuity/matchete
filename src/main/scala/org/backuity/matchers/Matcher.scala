@@ -2,8 +2,11 @@ package org.backuity.matchers
 
 
 trait Matcher[-T] { outer =>
+  /** if t doesn't conform to the matcher then an exception will be raised */
   def check( t : => T) : Any
+
   def description : String
+
   override def toString = description
 
   def and[U <: T](other: Matcher[U]) : Matcher[U] = new Matcher[U] {

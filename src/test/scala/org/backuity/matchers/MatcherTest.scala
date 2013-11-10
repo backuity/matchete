@@ -15,6 +15,11 @@ class MatcherTest extends JunitMatchers {
   }
 
   @Test
+  def matcherShouldBeContravariant() {
+    Seq(1,2,3) must_== List(1,2,3)
+  }
+
+  @Test
   def and() {
     10 must (be_<(100) and be_>(1))
 

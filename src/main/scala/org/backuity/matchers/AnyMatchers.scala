@@ -29,14 +29,6 @@ trait AnyMatchers extends CoreMatcherSupport {
   def beEqualTo[T](expected: T) = beEqual(expected)
   def be_==[T](expected : T) = beEqual(expected)
 
-  def be[T](m: Matcher[T]) = new EagerMatcher[T] {
-    def description: String = "be " + m.description
-
-    protected def eagerCheck(t: T) {
-      m.check(t)
-    }
-  }
-
   implicit val SizedString : Sized[String] = new Sized[String] { def size(s: String) = s.length }
   implicit def SizedArray[T] : Sized[Array[T]] = new Sized[Array[T]] { def size(a: Array[T]): Int = a.length }
   implicit def SizedStructural[T <: { def size : Int }] : Sized[T] = new Sized[T] { def size(s : T) = s.size }
@@ -52,27 +44,8 @@ trait AnyMatchers extends CoreMatcherSupport {
     }
   }
 
-  /**
-   * beLike needs a description to have something to report in case of error.
-   * Without a description nested beLike would make the test results hard to understand in some situation:
-   * `containExactly(beLike(), beLike()) => "No element matched ???"`
-   */
-  def beLike[T](desc: String)( pf: PartialFunction[T,Unit]) = new EagerMatcher[T] {
-    def description = desc
-    def eagerCheck(t: T) {
-      if( pf.isDefinedAt(t) ) {
-        try {
-          pf(t)
-        } catch {
-          case util.control.NonFatal(e) => fail(s"$t is not $description: ${e.getMessage}")
-        }
-      } else fail(s"$t is not $description")
-    }
-  }
-
-  def beEmpty[T <% Any { def isEmpty : Boolean }](implicit formatter: Formatter[T]) = new EagerMatcher[T] {
-    def description = "be empty"
-    def eagerCheck(t : T) { failIf(!t.isEmpty, s"${formatter.format(t)} is not empty")}
+  def beEmpty[T <% Any { def isEmpty : Boolean }](implicit formatter: Formatter[T]) : Matcher[T] = be("empty") {
+    case t if t.isEmpty =>
   }
 
   // we need a manifest to be able to format the failure if the failing result is formatable
@@ -99,7 +72,6 @@ trait AnyMatchers extends CoreMatcherSupport {
       }
     }
   }
-
 
   def beA[T : Manifest] = matcher[Any](
     description = "be a " + manifest[T].runtimeClass.getCanonicalName,
