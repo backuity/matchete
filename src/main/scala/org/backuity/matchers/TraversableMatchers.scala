@@ -193,12 +193,23 @@ trait TraversableMatchers extends CoreMatcherSupport {
 object TraversableMatchers {
 
   /**
+   * A failing item in a contain check with possibly multiple causes.
+   *
+   * For example:
+   * {{{
+   *   - Person(andrea,17) : // the item
+   *     * is not an adult: 17 is not >= 18 // 1st cause
+   *     * is not a 4 letter name: 'andrea' has size 6 but expected size 4 // 2nd cause
+   *     * is not a 'jo' starting name: 'andrea' does not start with 'jo'' // 3rd cause
+   * }}}
    * @param errors can be empty
    */
   private class ContainError(val item: String, val errors: List[String]) {
     override def toString = {
       errors match {
         case Nil => item
+
+        // inline for one element
         case hd :: Nil =>
           if( hd.startsWith(item)) {
             hd
@@ -206,11 +217,14 @@ object TraversableMatchers {
             item + " : " + hd
           }
 
+        // multiple lines for more than one element
         case _ =>
           val trimedErrors = errors.map{ e =>
-            (if( e.startsWith(item) ) {
-              e.substring(item.length)
-            } else e).trim
+            if( e.startsWith(item) ) {
+              e.substring(item.length).trim
+            } else {
+              e
+            }
           }
           item + " :\n  * " + trimedErrors.mkString("\n  * ")
       }

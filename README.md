@@ -1,7 +1,7 @@
 matchete
 ========
 
-Matchete is a simple collection of matchers. It is simple, type-safe, concise but yet offers comprehensive error messages. It has no dependencies and is easy to extend.
+Matchete is a simple collection of (test) matchers. It is simple, type-safe, concise but yet offers comprehensive error messages. It has no dependencies and is easy to extend.
 
 I'll assume you're already familiar with matchers. If not you can take a look at hamcrest: <https://github.com/hamcrest/JavaHamcrest>
 
@@ -136,13 +136,32 @@ trait CustomMatchers extends MatcherSupport {
 
 ### Throw different errors
 
+Say you want the matchers to throw `RuntimeException` instead of `AssertionError`. Easy, just implement `org.backuity.matchete.FailureReporter`:
+```scala
+trait FailureReporter {
+
+  def fail(msg: String) : Nothing
+
+  def failIfDifferentStrings(actual: String, expected: String, msg: String) {
+    if( actual != expected ) fail(msg)
+  }
+}
+```
+`failIfDifferentStrings` can also be overriden if you need to throw different error messages for string mismatch.
+
 
 ## Why Matchete?
 
 In the scala world the matchers offer come in
- - specs2
- - scala-test
+ - [specs2](http://etorreborre.github.io/specs2/)
+ - [scala test](http://www.scalatest.org/)
 
-Those are full blown test frameworks, and their matchers are tightly integrated with the framework, making hard their use as standalone matchers.
+Those are full blown test frameworks, and their matchers are tightly integrated with the framework, making them slightly more complex (to my taste at least!), and harder to use standalone.
+
+
+## Finally.. where the hell does the name come from??
+
+If you're wondering then I guess you've missed a piece of cinematography! 
+I can just highly recommend that you check [this](http://en.wikipedia.org/wiki/Machete_(film)) out.
 
 

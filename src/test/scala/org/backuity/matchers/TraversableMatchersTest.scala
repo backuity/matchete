@@ -19,7 +19,7 @@ class TraversableMatchersTest extends JunitMatchers {
       "List(1, 2, 30, 40) is not valid: 30 is not < 10")
 
     {List(1,2,3,4) must forAll(beLike("< 3") { case i => require( i < 3, s"$i is not < 3") })} must throwAn[AssertionError].withMessage(
-      "List(1, 2, 3, 4) is not valid: 3 is not < 3: requirement failed: 3 is not < 3")
+      "List(1, 2, 3, 4) is not valid: 3 is not like < 3: requirement failed: 3 is not < 3")
   }
 
   @Test
@@ -32,18 +32,18 @@ class TraversableMatchersTest extends JunitMatchers {
       "List() does not contain be < 2")
 
     {List(Person("john", 15), Person("josephine", 12), Person("joseph", 7)) must contain(
-      beLike("an adult"){ case Person(_,age) => age must be_>=(18)},
-      beLike("a 'm' starting name"){ case Person(name,_) => name must startWith("m")},
-      beLike("a 'jo' starting name"){ case Person(name,_) => name must startWith("jo")})} must throwAn[AssertionError].withMessage(
+      an("adult"){ case Person(_,age) => age must be_>=(18)},
+      an("'m' starting name"){ case Person(name,_) => name must startWith("m")},
+      a("'jo' starting name"){ case Person(name,_) => name must startWith("jo")})} must throwAn[AssertionError].withMessage(
       """List(Person(john,15), Person(josephine,12), Person(joseph,7)) does not contain:
         |- an adult :
         |  * Person(john,15) is not an adult: 15 is not >= 18
         |  * Person(josephine,12) is not an adult: 12 is not >= 18
         |  * Person(joseph,7) is not an adult: 7 is not >= 18
-        |- a 'm' starting name :
-        |  * Person(john,15) is not a 'm' starting name: 'john' does not start with 'm'
-        |  * Person(josephine,12) is not a 'm' starting name: 'josephine' does not start with 'm'
-        |  * Person(joseph,7) is not a 'm' starting name: 'joseph' does not start with 'm'""".stripMargin)
+        |- an 'm' starting name :
+        |  * Person(john,15) is not an 'm' starting name: 'john' does not start with 'm'
+        |  * Person(josephine,12) is not an 'm' starting name: 'josephine' does not start with 'm'
+        |  * Person(joseph,7) is not an 'm' starting name: 'joseph' does not start with 'm'""".stripMargin)
 
     List() must not(contain(be_<(5), be_>(10)))
     List(8) must not(contain(be_<(5), be_>(10)))
@@ -118,9 +118,9 @@ class TraversableMatchersTest extends JunitMatchers {
 
     // 2. sizes match, but some elements are unmatched
     {List(Person("john", 28), Person("sophie", 12), Person("andrea", 17)) must containExactly(
-      beLike("an adult"){ case Person(_,age) => age must be_>=(18)},
-      beLike("a 4 letter name"){ case Person(name,_) => name must haveSize(4)},
-      beLike("a 'jo' starting name"){ case Person(name,_) => name must startWith("jo")})} must throwAn[AssertionError].withMessage(
+      an("adult"){ case Person(_,age) => age must be_>=(18)},
+      a("4 letter name"){ case Person(name,_) => name must haveSize(4)},
+      a("'jo' starting name"){ case Person(name,_) => name must startWith("jo")})} must throwAn[AssertionError].withMessage(
       """List(Person(john,28), Person(sophie,12), Person(andrea,17)) has unexpected elements:
         |- Person(sophie,12) :
         |  * is not an adult: 12 is not >= 18
@@ -146,18 +146,18 @@ class TraversableMatchersTest extends JunitMatchers {
 
     // 2. sizes match, but some matchers are unsatisfied
     {List(Person("john", 15), Person("josephine", 12), Person("joseph", 7)) must containExactly(
-      beLike("an adult"){ case Person(_,age) => age must be_>=(18)},
-      beLike("a 'm' starting name"){ case Person(name,_) => name must startWith("m")},
-      beLike("a 'jo' starting name"){ case Person(name,_) => name must startWith("jo")})} must throwAn[AssertionError].withMessage(
+      an("adult"){ case Person(_,age) => age must be_>=(18)},
+      an("'m' starting name"){ case Person(name,_) => name must startWith("m")},
+      a("'jo' starting name"){ case Person(name,_) => name must startWith("jo")})} must throwAn[AssertionError].withMessage(
       """List(Person(john,15), Person(josephine,12), Person(joseph,7)) does not contain:
         |- an adult :
         |  * Person(john,15) is not an adult: 15 is not >= 18
         |  * Person(josephine,12) is not an adult: 12 is not >= 18
         |  * Person(joseph,7) is not an adult: 7 is not >= 18
-        |- a 'm' starting name :
-        |  * Person(john,15) is not a 'm' starting name: 'john' does not start with 'm'
-        |  * Person(josephine,12) is not a 'm' starting name: 'josephine' does not start with 'm'
-        |  * Person(joseph,7) is not a 'm' starting name: 'joseph' does not start with 'm'""".stripMargin)
+        |- an 'm' starting name :
+        |  * Person(john,15) is not an 'm' starting name: 'john' does not start with 'm'
+        |  * Person(josephine,12) is not an 'm' starting name: 'josephine' does not start with 'm'
+        |  * Person(joseph,7) is not an 'm' starting name: 'joseph' does not start with 'm'""".stripMargin)
   }
 
   @Test
