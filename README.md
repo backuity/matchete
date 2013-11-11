@@ -1,7 +1,7 @@
 matchete
 ========
 
-Matchete is a simple collection of (test) matchers. It is simple, type-safe, concise but yet offers comprehensive error messages. It has no dependencies and is easy to extend.
+Matchete is a collection of (test) matchers. It is simple, type-safe, concise but yet offers comprehensive error messages. It has no dependencies and is easy to extend.
 
 I'll assume you're already familiar with matchers. If not you can take a look at hamcrest: <https://github.com/hamcrest/JavaHamcrest>
 
