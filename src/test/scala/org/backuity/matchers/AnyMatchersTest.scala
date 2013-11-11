@@ -52,18 +52,6 @@ class AnyMatchersTest extends JunitMatchers {
       "Array(1, 2) should not be equal to Array(1, 2)")
   }
 
-  // TODO move to CoreMatcherSupportTest
-  @Test
-  def beLike() {
-    Some(1) must beLike("< 10") { case Some(i) => require(i < 10, s"$i isn't < 10") }
-
-    {Person("john", 15) must be("an adult") { case Person(_,age) => age must be_>=(18)}} must throwAn[AssertionError].withMessage(
-      "Person(john,15) is not an adult: 15 is not >= 18")
-
-    {Some(10) must beLike("< 10") { case Some(i) => require(i < 10, s"$i isn't < 10") }} must throwAn[AssertionError].withMessage(
-      "Some(10) is not like < 10: requirement failed: 10 isn't < 10")
-  }
-
   @Test
   def isEmpty() {
     List() must beEmpty
@@ -112,6 +100,9 @@ class AnyMatchersTest extends JunitMatchers {
 
     {List() must not(beEmpty)} must throwAn[AssertionError].withMessage(
       "List() should not be empty")
+
+    {"john" must not(be(a("name with vowels"){ case n => n must contain("o")}))} must throwAn[AssertionError].withMessage(
+      "'john' should not be a name with vowels")
 
     def failure() { throw new RuntimeException("baam") }
 

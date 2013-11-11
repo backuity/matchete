@@ -72,6 +72,9 @@ will compile.
 ## Convenient matchers
 
 
+### For collections
+
+Collection matchers are often tricky to get right. Matchete has been especially polished in this area.
 
 See `TraversableMatchersTest`
 
@@ -79,6 +82,13 @@ See `TraversableMatchersTest`
 List(2,4,6,8) must forAll(be_<(10) and be("an even number") { case n if n % 2 == 0 => })
 List(2,1) must containElements(1,2)
 
+// Contain Exactly
+//
+// make sure each element in the collection is matched by a matcher
+// AND each matcher matches an element
+//
+// Note that a matcher might match multiple elements:
+//
 Set(1,2) must containExactly(
   an("even number") { case n if n % 2 == 0 => }, 
   be_<(3))
@@ -94,6 +104,7 @@ Given
 ```scala
 case class Person(name: String, age: Int)
 ```
+The following match
 
 ```scala
 List(Person("john", 28), Person("sophie", 12), Person("andrea", 17)) must containExactly(
@@ -102,7 +113,7 @@ List(Person("john", 28), Person("sophie", 12), Person("andrea", 17)) must contai
       a("'jo' starting name"){ case Person(name,_) => name must startWith("jo")})
 ```
 
-Will produce the following error message
+Will produce
 
 ```
 List(Person(john,28), Person(sophie,12), Person(andrea,17)) has unexpected elements:
@@ -121,22 +132,52 @@ List(Person(john,28), Person(sophie,12), Person(andrea,17)) has unexpected eleme
 
 ### Create your own matchers
 
-Extend `MatcherSupport` :
+Extend `MatcherSupport`, it provides few utilities to build matchers, depending on the level of customization you need.
+
+For instance we could alias `an("adult")` into a `PersonMatchers` trait :
 
 ```scala
-trait CustomMatchers extends MatcherSupport {
+trait PersonMatchers extends MatcherSupport {
 
-  def haveLastModified(lastModified: Time) = matcher[LastModifiedNavigable](
-    description = "have last-modified " + lastModified,
-    validate = _.lastModified == lastModified,
-    failureDescription = (s:LastModifiedNavigable) => s"$s last-modified is ${s.lastModified} expected $lastModified")
+  def anAdult : Matcher[Person] = an("adult") { case Person(_,age) => age must be_>=(18) }
 }
 ```
+
+but if you need more control on the error message then you can use `matcher`:
+
+```scala
+  def anAdult = matcher[Person](
+    description = "an adult",
+    validate = _.age >= 18,
+    failureDescription = person => s"$person is not an adult, its age (${person.age}) should be greater or equal to 18")
+```
+
+of course you can defined parameterized matchers:
+
+```scala
+  def anAdult(ageLimit: Int) : Matcher[Person] = an("adult") { case Person(_,age) => age must be >=(ageLimit) }
+```
+
+You can take a look at `FileMatchers` which isn't part of the core matchers.
+
+Finally to use your matchers, just mix them in your tests:
+
+```scala
+class MyTests extends JunitMatchers with PersonMatchers { /* ... */ }
+```
+
+I often create a "test-base" class that groups matchers of common interest:
+
+```scala
+abstract class CityTestBase extends JunitMatchers with PersonMatchers with CityMatchers with BuildingMatchers // ... you get the idea
+```
+
+Note that you couldn't use your matchers alone as they would need a `FailureReporter`. See `JunitMatchers` to understand how to provide "standalone" matchers.
 
 
 ### Throw different errors
 
-Say you want the matchers to throw `RuntimeException` instead of `AssertionError`. Easy, just implement `org.backuity.matchete.FailureReporter`:
+Say you want the matchers to throw `RuntimeException` instead of `AssertionError`. Easy, just implement `FailureReporter`:
 ```scala
 trait FailureReporter {
 
