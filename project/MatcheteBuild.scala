@@ -57,10 +57,7 @@ object MatcheteBuild extends Build {
             <name>Bruno Bieth</name>
             <url>https://github.com/backuitist</url>
           </developer>
-        </developers>,
-
-      // do not publish documentation -- source is enough
-      publishArtifact in packageDoc := false
+        </developers>
     )
     .settings(ReleasePlugin.releaseSettings : _*)
     .dependsOn(testMacro % "test-internal->compile")
