@@ -65,6 +65,7 @@ object MatcheteBuild extends Build {
     .settings(ReleasePlugin.releaseSettings : _*)
     .dependsOn(testMacro % "test->compile")
 
+  // macro need to be compiled separately
   lazy val testMacro = project.in(file("test-macro")).settings(
     libraryDependencies += "org.scala-lang" % "scala-reflect" % "2.10.1"
   )
