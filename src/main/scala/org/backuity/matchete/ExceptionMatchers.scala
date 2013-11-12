@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.backuity.matchers
+package org.backuity.matchete
 
 trait ThrowMatcher[T <: Throwable] extends Matcher[Any] {
   def withMessage(expectedMessage: String) : Matcher[Any]

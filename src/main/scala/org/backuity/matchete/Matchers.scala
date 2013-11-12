@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-package org.backuity.matchers
+package org.backuity.matchete
 
-import java.io.File
+import scala.language.implicitConversions
 
-trait FileMatchers extends MatcherSupport {
-
-  def exist : Matcher[File] = matcher[File](
-    description = "exist",
-    validate = _.exists(),
-    failureDescription = _.getCanonicalPath + " do not exist")
-
-  def haveLastModified(time: Long) : Matcher[File] = matcher[File](
-    description = "have last-modified " + time,
-    validate = _.lastModified() == time,
-    failureDescription = file => s"File ${file.getCanonicalPath} has not been last-modified at $time but at ${file.lastModified()}"
-  )
+/** Core matchers */
+trait Matchers extends ExceptionMatchers
+                  with StringMatchers
+                  with TraversableMatchers
+                  with OrderedMatchers
+                  with NumericMatchers
+                  with BooleanMatchers
+                  with AnyMatchers {
 }
+
+
+

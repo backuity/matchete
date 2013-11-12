@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.backuity.matchers
+package org.backuity.matchete
 
 import scala.language.experimental.macros
 

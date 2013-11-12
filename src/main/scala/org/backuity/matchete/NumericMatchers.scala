@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.backuity.matchers
+package org.backuity.matchete
 
 case class Delta[S : Numeric](n: S, delta: S) {
   import Numeric.Implicits._

@@ -14,19 +14,17 @@
  * limitations under the License.
  */
 
-package org.backuity.matchers
+package org.backuity.matchete
 
-import scala.language.implicitConversions
+trait BooleanMatchers extends CoreMatcherSupport {
 
-/** Core matchers */
-trait Matchers extends ExceptionMatchers
-                  with StringMatchers
-                  with TraversableMatchers
-                  with OrderedMatchers
-                  with NumericMatchers
-                  with BooleanMatchers
-                  with AnyMatchers {
+  def beTrue = matcher[Boolean](
+    description = "be true",
+    validate = _ == true,
+    failureDescription = _ => "is not true")
+
+  def beFalse = matcher[Boolean](
+    description = "be false",
+    validate = _ == false,
+    failureDescription = _ => "is true")
 }
-
-
-

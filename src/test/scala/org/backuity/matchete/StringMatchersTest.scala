@@ -14,26 +14,27 @@
  * limitations under the License.
  */
 
-package org.backuity.matchers
+package org.backuity.matchete
 
 import org.junit.Test
 
-class NumericMatchersTest extends JunitMatchers {
+class StringMatchersTest extends JunitMatchers {
+  @Test
+  def startWith() {
+    "john" must startWith("jo")
+
+    {"mary" must startWith("jo")} must throwA[AssertionError].withMessage(
+      "'mary' does not start with 'jo'")
+  }
 
   @Test
-  def testBeCloseTo() {
-    12 must beCloseTo( 10 +/- 2 )
-    12 must beCloseTo( 10 +/- 3 )
-    12 must beCloseTo( 14 +/- 2 )
-    12 must beCloseTo( 14 +/- 3 )
+  def contain() {
+    "john is tired" must contain("is")
+    "john is tired" must contain("ti")
+    "john is tired" must contain("tired")
+    "john is tired" must contain("john")
 
-    -10 must beCloseTo( -8 +/- 3 )
-    2 must beCloseTo( -1 +/- 3 )
-
-    (12 must beCloseTo(10 +/- 1)) must throwAn[AssertionError].withMessage(
-      "12 is not close to 10 +/- 1 (12 is > 11)")
-
-    (-3 must beCloseTo(3 +/- 2)) must throwAn[AssertionError].withMessage(
-      "-3 is not close to 3 +/- 2 (-3 is < 1)")
+    {"john is tired" must contain("ist")} must throwAn[AssertionError].withMessage(
+      "'john is tired' does not contain 'ist'")
   }
 }

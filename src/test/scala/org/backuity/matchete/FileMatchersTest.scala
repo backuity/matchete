@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package org.backuity.matchers
+package org.backuity.matchete
 
-import org.junit.ComparisonFailure
+import org.junit.Test
+import java.io.File
 
-trait JunitFailureReporter extends AssertionFailureReporter {
-  override def failIfDifferentStrings(actual: String, expected: String, msg: String) {
-    if( actual != expected ) throw new ComparisonFailure(msg, expected, actual)
+class FileMatchersTest extends JunitMatchers with FileMatchers {
+
+  @Test
+  def testExist() {
+    new File(".") must exist
+
+    (new File("/that/doesnt/exist") must exist) must throwAn[AssertionError].withMessage(
+      "/that/doesnt/exist do not exist")
   }
 }
-
-/**
- * Matchers that throw [[java.lang.AssertionError]] and [[org.junit.ComparisonFailure]] upon failure.
- */
-trait JunitMatchers extends Matchers with JunitFailureReporter with ToMatcherOps
-object junitMatchers extends JunitMatchers

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.backuity.matchers
+package org.backuity.matchete
 
 import org.junit.{ComparisonFailure, Test}
 
@@ -134,7 +134,7 @@ class AnyMatchersTest extends JunitMatchers {
     new A1 must beA[A]
 
     {new A1 must beA[A2]} must throwAn[AssertionError].withMessage(
-      "A1() is not a org.backuity.matchers.AnyMatchersTest.A2 it is a org.backuity.matchers.AnyMatchersTest.A1")
+      "A1() is not a org.backuity.matchete.AnyMatchersTest.A2 it is a org.backuity.matchete.AnyMatchersTest.A1")
   }
 }
 

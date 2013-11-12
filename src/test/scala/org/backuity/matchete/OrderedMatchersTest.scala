@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-package org.backuity.matchers
+package org.backuity.matchete
 
+import org.junit.Test
 
-trait AssertionFailureReporter extends FailureReporter {
-  def fail(msg: String) = throw new AssertionError(msg)
+class OrderedMatchersTest extends JunitMatchers {
+
+  @Test
+  def orderedMatchers() {
+    "abc" must be_<("bcd")
+
+    {"bcd" must be_<("abc")} must throwAn[AssertionError].withMessage(
+      "'bcd' is not < 'abc'")
+  }
 }
-
-/**
- * Matchers that throw [[java.lang.AssertionError]] upon failure.
- */
-trait AssertionMatchers extends Matchers with AssertionFailureReporter with ToMatcherOps
-object assertionMatchers extends AssertionMatchers

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.backuity.matchers
+package org.backuity.matchete
 
 
 /** Helper to build the core matchers */
@@ -70,6 +70,6 @@ trait CoreMatcherSupport extends FailureReporter with Formatters with ToMatcherO
 
 /**
  * Helper to build matchers. Provides core matchers.
- * @see [[org.backuity.matchers.Matchers]]
+ * @see [[org.backuity.matchete.Matchers]]
  */
 trait MatcherSupport extends CoreMatcherSupport with Matchers

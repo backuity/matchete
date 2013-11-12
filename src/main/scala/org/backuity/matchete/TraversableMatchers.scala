@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package org.backuity.matchers
+package org.backuity.matchete
 
 import scala.annotation.tailrec
-import org.backuity.matchers.TraversableMatchers.ContainError
+import org.backuity.matchete.TraversableMatchers.ContainError
 import scala.util.control.Breaks
 
 

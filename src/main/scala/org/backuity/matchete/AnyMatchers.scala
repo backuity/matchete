@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.backuity.matchers
+package org.backuity.matchete
 
 import scala.language.reflectiveCalls
 
