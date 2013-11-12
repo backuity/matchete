@@ -31,7 +31,7 @@ object MatcheteBuild extends Build {
       scalacOptions ++= Seq("-deprecation", "-unchecked"),
 
       libraryDependencies ++= Seq(
-        "com.novocode"          % "junit-interface"       % "0.10"      % "test",
+        "com.novocode"          % "junit-interface"       % "0.10"      % "test-internal",
         "junit"                 % "junit"                 % "4.10"      % "optional"),
 
       publishMavenStyle := true,
@@ -63,7 +63,7 @@ object MatcheteBuild extends Build {
       publishArtifact in packageDoc := false
     )
     .settings(ReleasePlugin.releaseSettings : _*)
-    .dependsOn(testMacro % "test->compile")
+    .dependsOn(testMacro % "test-internal->compile")
 
   // macro need to be compiled separately
   lazy val testMacro = project.in(file("test-macro")).settings(
