@@ -1,4 +1,4 @@
-matchete [![Build Status](https://travis-ci.org/backuity/matchete.png?branch=master)](https://travis-ci.org/backuity/matchete.png)
+matchete [![Build Status](https://travis-ci.org/backuity/matchete.png?branch=master)](https://travis-ci.org/backuity/matchete)
 ========
 
 Matchete is a collection of (test) matchers. It is simple, type-safe, concise but yet offers comprehensive error messages. It has no dependencies and is easy to extend.
