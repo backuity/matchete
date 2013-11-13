@@ -41,8 +41,8 @@ trait AnyMatchers extends CoreMatcherSupport {
     }
   }
 
-  def beEqualTo[T](expected: T) = beEqual(expected)
-  def be_==[T](expected : T) = beEqual(expected)
+  def beEqualTo[T : Formatter](expected: T) = beEqual(expected)
+  def be_==[T : Formatter](expected : T) = beEqual(expected)
 
   implicit val SizedString : Sized[String] = new Sized[String] { def size(s: String) = s.length }
   implicit def SizedArray[T] : Sized[Array[T]] = new Sized[Array[T]] { def size(a: Array[T]): Int = a.length }

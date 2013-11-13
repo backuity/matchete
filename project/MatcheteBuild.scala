@@ -19,11 +19,14 @@ import sbtrelease.ReleasePlugin
 
 object MatcheteBuild extends Build {
 
+  override def settings = super.settings ++ Seq(
+    scalaVersion := "2.10.3"
+  )
+
   lazy val main = project.in(file("."))
     .settings(
       name := "matchete",
       organization := "org.backuity",
-      scalaVersion := "2.10.2",
 
       homepage := Some(url("https://github.com/backuity/matchete")),
       licenses := Seq("Apache 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
@@ -64,6 +67,6 @@ object MatcheteBuild extends Build {
 
   // macro need to be compiled separately
   lazy val testMacro = project.in(file("test-macro")).settings(
-    libraryDependencies += "org.scala-lang" % "scala-reflect" % "2.10.1"
+    libraryDependencies += "org.scala-lang" % "scala-reflect" % "2.10.3"
   )
 }
