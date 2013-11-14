@@ -26,11 +26,11 @@ class MatcherOps[T](t : => T, reporter: FailureReporter) {
   def must(matcher: Matcher[T])(implicit formatter: Formatter[T]) { matcher.check(t) }
 
   /** type safe equality */
-  def must_==(other: T)(implicit formatter: Formatter[T]) { must(anyMatchers.beEqual(other))}
+  def must_==(other: T)(implicit formatter: Formatter[T]) { must(anyMatchers.equalTo(other))}
 
   /** type safe inequality */
   // note: we need a manifest for the not matcher
-  def must_!=(other: T)(implicit formatter: Formatter[T], manifest: Manifest[T]) { must(anyMatchers.not(anyMatchers.beEqual(other)))}
+  def must_!=(other: T)(implicit formatter: Formatter[T], manifest: Manifest[T]) { must(anyMatchers.not(anyMatchers.beEqualTo(other)))}
 }
 
 trait ToMatcherOps { this : FailureReporter =>

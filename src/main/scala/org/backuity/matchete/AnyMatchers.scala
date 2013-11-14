@@ -24,8 +24,8 @@ trait Sized[T] {
 trait AnyMatchers extends CoreMatcherSupport {
 
   /** non-type safe equality, prefer must_== when possible */
-  def beEqual[T](expected: T)(implicit formatter: Formatter[T]) = new EagerMatcher[T]{
-    def description = s"be equal to ${formatter.format(expected)}"
+  private def equal[T](prefix: String, expected: T)(implicit formatter: Formatter[T]) = new EagerMatcher[T]{
+    def description = s"${prefix}equal to ${formatter.format(expected)}"
 
     def eagerCheck(actual: T) {
       val notEqualMessage = s"${formatter.format(actual)} is not equal to ${formatter.format(expected)}"
@@ -41,8 +41,9 @@ trait AnyMatchers extends CoreMatcherSupport {
     }
   }
 
-  def beEqualTo[T : Formatter](expected: T) = beEqual(expected)
-  def be_==[T : Formatter](expected : T) = beEqual(expected)
+  def equalTo[T : Formatter](expected: T) = equal("", expected)
+  def beEqualTo[T : Formatter](expected: T) = equal("be ", expected)
+  def be_==[T : Formatter](expected : T) = equal("be ", expected)
 
   implicit val SizedString : Sized[String] = new Sized[String] { def size(s: String) = s.length }
   implicit def SizedArray[T] : Sized[Array[T]] = new Sized[Array[T]] { def size(a: Array[T]): Int = a.length }
