@@ -26,6 +26,6 @@ trait StringMatchers extends CoreMatcherSupport {
 
   def contain(substring: String)(implicit formatter: Formatter[String]) = matcher[String](
     description = "contain " + substring,
-    validate = _.matches(".*?" + substring + ".*?"),
+    validate = _.contains(substring),
     failureDescription = (t: String) => s"${formatter.format(t)} does not contain ${formatter.format(substring)}")
 }

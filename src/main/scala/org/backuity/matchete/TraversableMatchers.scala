@@ -66,7 +66,7 @@ trait TraversableMatchers extends CoreMatcherSupport {
     }
   }
 
-  /** elements might be duplicated */
+  /** order does not matter and elements might be duplicated */
   def containElements[T](others: T*)(implicit formatter: Formatter[T]) = new EagerMatcher[Traversable[T]] {
     def description = "contain the same elements as " + others
 

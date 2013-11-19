@@ -34,6 +34,8 @@ class StringMatchersTest extends JunitMatchers {
     "john is tired" must contain("tired")
     "john is tired" must contain("john")
 
+    "\njohn\nis\ntired" must (contain("john") and contain("is") and contain("tired"))
+
     {"john is tired" must contain("ist")} must throwAn[AssertionError].withMessage(
       "'john is tired' does not contain 'ist'")
   }
