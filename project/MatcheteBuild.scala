@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import com.typesafe.sbt.pgp.PgpKeys
 import sbt._
 import Keys._
 import sbtrelease.ReleasePlugin
@@ -46,6 +48,9 @@ object MatcheteBuild extends Build {
         else
           Some("releases"  at nexus + "service/local/staging/deploy/maven2")
       },
+
+      // replace publish by publishSigned
+      publish := PgpKeys.publishSigned.value,
 
       pomIncludeRepository := { _ => false },
 
