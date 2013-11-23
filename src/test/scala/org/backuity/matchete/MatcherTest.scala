@@ -61,6 +61,6 @@ class MatcherTest extends JunitMatchers {
       "john is not equal to mary")
 
     {List(Person("john", 12)) must_== List(Person("mary", 24))} must throwAn[AssertionError].withMessage(
-      "List(john) is not equal to List(mary)")
+      "List(john) is not equal to List(mary), at index 1 expected mary but got john")
   }
 }

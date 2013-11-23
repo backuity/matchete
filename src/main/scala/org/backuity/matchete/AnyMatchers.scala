@@ -21,29 +21,94 @@ trait Sized[T] {
   def size(t: T) : Int
 }
 
+trait MatcherComparator[-T] {
+  def checkEqual(actual: T, expected : T)
+}
+
 trait AnyMatchers extends CoreMatcherSupport {
 
-  /** non-type safe equality, prefer must_== when possible */
-  private def equal[T](prefix: String, expected: T)(implicit formatter: Formatter[T]) = new EagerMatcher[T]{
-    def description = s"${prefix}equal to ${formatter.format(expected)}"
+  implicit def seqComparator[T](implicit elemFormatter: Formatter[T], seqFormatter: Formatter[Seq[T]]) = new MatcherComparator[Seq[T]] {
+    def checkEqual(actualSeq: Seq[T], expectedSeq: Seq[T]) {
+      val expectedIt = expectedSeq.iterator
+      val actualIt = actualSeq.iterator
+      var idx = 1
 
-    def eagerCheck(actual: T) {
-      val notEqualMessage = s"${formatter.format(actual)} is not equal to ${formatter.format(expected)}"
-      if( expected.isInstanceOf[String] ) {
-        failIfDifferentStrings(actual.asInstanceOf[String], expected.asInstanceOf[String], notEqualMessage)
-      } else {
-        val same = (expected, actual) match {
-          case (expectedArr: Array[_], actualArr: Array[_]) => expectedArr.deep == actualArr.deep
-          case _ => expected == actual
+      def failAtIndex(msg: String) = fail(s"${seqFormatter.format(actualSeq)} is not equal to ${seqFormatter.format(expectedSeq)}, at index $idx $msg")
+
+      while(expectedIt.hasNext) {
+        val expectedNext = expectedIt.next()
+        if( ! actualIt.hasNext ) {
+          failAtIndex(s"expected ${elemFormatter.format(expectedNext)} but got no element")
+        } else {
+          val actualNext = actualIt.next()
+          if( expectedNext != actualNext ) {
+            failAtIndex(s"expected ${elemFormatter.format(expectedNext)} but got ${elemFormatter.format(actualNext)}")
+          }
         }
-        failIf( !same, notEqualMessage)
+        idx += 1
+      }
+      if( actualIt.hasNext ) {
+        failAtIndex(s"expected no element but got ${elemFormatter.format(actualIt.next())}")
       }
     }
   }
 
-  def equalTo[T : Formatter](expected: T) = equal("", expected)
-  def beEqualTo[T : Formatter](expected: T) = equal("be ", expected)
-  def be_==[T : Formatter](expected : T) = equal("be ", expected)
+  implicit def setComparator[T](implicit elemFormatter: Formatter[T], setFormatter: Formatter[Set[T]] ) = new MatcherComparator[Set[T]] {
+    def checkEqual(actualSet: Set[T], expectedSet: Set[T]) {
+      if( actualSet != expectedSet ) {
+        def failWithHint(msg: String) = fail(s"${setFormatter.format(actualSet)} is not equal to ${setFormatter.format(expectedSet)}, $msg")
+
+        val missing = expectedSet -- actualSet
+        val extra = actualSet -- expectedSet
+        val missingMsg = if( missing.size > 1 ) {
+            List(s"elements ${missing.mkString(", ")} are missing")
+          } else if( missing.size == 1 ) {
+            List(s"element ${missing.head} is missing")
+          } else {
+            Nil
+          }
+        val extraMsg = if( extra.size > 1 ) {
+            List(s"elements ${extra.mkString(", ")} were not expected")
+          } else if(extra.size == 1) {
+            List(s"element ${extra.head} was not expected")
+          } else Nil
+        failWithHint((missingMsg ::: extraMsg).mkString(" and "))
+      }
+    }
+  }
+
+  implicit def arrayComparator[T](implicit arrayFormatter: Formatter[Array[T]]) = new MatcherComparator[Array[T]] {
+    def checkEqual(actualArr: Array[T], expectedArr: Array[T]) {
+      if( expectedArr.deep != actualArr.deep ) {
+        fail(s"${arrayFormatter.format(actualArr)} is not equal to ${arrayFormatter.format(expectedArr)}")
+      }
+    }
+  }
+
+  implicit def stringComparator(implicit formatter: Formatter[String]) = new MatcherComparator[String] {
+    def checkEqual(actual: String, expected: String) {
+      failIfDifferentStrings(actual, expected, s"${formatter.format(actual)} is not equal to ${formatter.format(expected)}")
+    }
+  }
+
+  implicit def anyComparator[T](implicit formatter: Formatter[T]) = new MatcherComparator[T] {
+    def checkEqual(actual: T, expected: T) {
+      failIf(actual != expected, s"${formatter.format(actual)} is not equal to ${formatter.format(expected)}")
+    }
+  }
+
+  /** non-type safe equality, prefer must_== when possible */
+  private def equal[T](prefix: String, expected: T)(implicit formatter: Formatter[T], comparator: MatcherComparator[T]) = new EagerMatcher[T]{
+    def description = s"${prefix}equal to ${formatter.format(expected)}"
+
+    def eagerCheck(actual: T) {
+      comparator.checkEqual(actual, expected)
+    }
+  }
+
+  def equalTo[T : Formatter : MatcherComparator](expected: T) = equal("", expected)
+  def beEqualTo[T : Formatter : MatcherComparator](expected: T) = equal("be ", expected)
+  def be_==[T : Formatter : MatcherComparator](expected : T) = equal("be ", expected)
 
   implicit val SizedString : Sized[String] = new Sized[String] { def size(s: String) = s.length }
   implicit def SizedArray[T] : Sized[Array[T]] = new Sized[Array[T]] { def size(a: Array[T]): Int = a.length }

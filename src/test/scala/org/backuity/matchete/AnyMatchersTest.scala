@@ -25,14 +25,18 @@ class AnyMatchersTest extends JunitMatchers {
   @Test
   def beEqual() {
     List(1,2) must_== List(1,2)
+    Person("john", 12) must_== Person("john", 12)
+    123 must_== 123
+    12.3 must_== 12.3
+
     Set(Person("John", 12), Person("Mary", 24)) must beEqualTo(Set(Person("Mary",24), Person("John", 12)))
     "john" must_== "john"
 
-    {List(1,2) must beEqualTo(List(1,2,3))} must throwAn[AssertionError].withMessage(
-      "List(1, 2) is not equal to List(1, 2, 3)")
+    {Person("john", 12) must beEqualTo(Person("mary", 21))} must throwAn[AssertionError].withMessage(
+      "Person(john,12) is not equal to Person(mary,21)")
 
-    {List(1,2) must_== List(1,2,3)} must throwAn[AssertionError].withMessage(
-      "List(1, 2) is not equal to List(1, 2, 3)")
+    {123 must_== 321} must throwAn[AssertionError].withMessage(
+      "123 is not equal to 321")
   }
 
   @Test
@@ -50,6 +54,42 @@ class AnyMatchersTest extends JunitMatchers {
 
     {Array(1,2,3,4) must_== Array(1,2,4,3)} must throwAn[AssertionError].withMessage(
       "Array(1, 2, 3, 4) is not equal to Array(1, 2, 4, 3)")
+  }
+
+  @Test
+  def beEqual_Seq() {
+    List(1,2,3) must_== List(1,2,3)
+    Seq(1,2,3) must_== List(1,2,3)
+
+    {Seq(1,2,3) must_== List(1,3,2)} must throwAn[AssertionError].withMessage(
+      "List(1, 2, 3) is not equal to List(1, 3, 2), at index 2 expected 3 but got 2")
+
+    {Seq(1,2,3) must_== List(1,2,3,4)} must throwAn[AssertionError].withMessage(
+      "List(1, 2, 3) is not equal to List(1, 2, 3, 4), at index 4 expected 4 but got no element")
+
+    {Seq(1,2,3) must_== List(1)} must throwAn[AssertionError].withMessage(
+      "List(1, 2, 3) is not equal to List(1), at index 2 expected no element but got 2")
+
+    {Seq.empty[Int] must_== List(1,2,3,4)} must throwAn[AssertionError].withMessage(
+      "List() is not equal to List(1, 2, 3, 4), at index 1 expected 1 but got no element")
+  }
+
+  @Test
+  def beEqual_Set() {
+    Set(1,2,3) must_== Set(1,2,3)
+    Set(1,2,3) must_== Set(3,2,1)
+
+    {Set(1,2,3) must_== Set(1,2)} must throwAn[AssertionError].withMessage(
+      "Set(1, 2, 3) is not equal to Set(1, 2), element 3 was not expected")
+
+    {Set(2,3) must_== Set(1,2,3)} must throwAn[AssertionError].withMessage(
+      "Set(2, 3) is not equal to Set(1, 2, 3), element 1 is missing")
+
+    {Set(2,3) must_== Set(1,2,3,4)} must throwAn[AssertionError].withMessage(
+      "Set(2, 3) is not equal to Set(1, 2, 3, 4), elements 1, 4 are missing")
+
+    {Set(2,3,5) must_== Set(1,2,3,4)} must throwAn[AssertionError].withMessage(
+      "Set(2, 3, 5) is not equal to Set(1, 2, 3, 4), elements 1, 4 are missing and element 5 was not expected")
   }
 
   @Test
