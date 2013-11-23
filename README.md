@@ -12,7 +12,7 @@ I'll assume you're already familiar with matchers. If not you can take a look at
 
 Import Matchete in your SBT project:
 ```
-libraryDependencies += "org.backuity" %% "matchete" % "1.0" % "test"
+libraryDependencies += "org.backuity" %% "matchete" % "1.3" % "test"
 ```
 
 It can be used along with JUnit by either extending `org.backuity.matchete.JunitMatchers` or importing `org.backuity.matchete.junitMatchers`.
