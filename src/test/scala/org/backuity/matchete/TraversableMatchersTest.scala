@@ -63,6 +63,14 @@ class TraversableMatchersTest extends JunitMatchers {
 
     List() must not(contain(be_<(5), be_>(10)))
     List(8) must not(contain(be_<(5), be_>(10)))
+
+    {List(1,2,3) must not(contain(an("even number") {
+      case n => n % 2 must beEqualTo(1)
+    }))} must throwAn[AssertionError].withMessage(
+      "List(1, 2, 3) should not contain an even number")
+
+    {List(2,3) must not(contain(be_<(5)))} must throwAn[AssertionError].withMessage(
+      "List(2, 3) should not contain be < 5")
   }
 
   @Test
