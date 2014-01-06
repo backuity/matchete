@@ -176,6 +176,22 @@ class AnyMatchersTest extends JunitMatchers {
     {new A1 must beA[A2]} must throwAn[AssertionError].withMessage(
       "A1() is not a org.backuity.matchete.AnyMatchersTest.A2 it is a org.backuity.matchete.AnyMatchersTest.A1")
   }
+
+  @Test
+  def beEq() {
+    val a1 = new A
+    val a2 = a1
+    a1 must beEq(a1)
+    a1 must beEq(a2)
+    a2 must beEq(a1)
+
+    new A must not(beEq(new A))
+    List(1) must not(beEq(List(1)))
+
+    {List(1) must beEq(List(1))} must throwAn[AssertionError].like("not eq") {
+      case e => e.getMessage must contain ("List(1)")
+    }
+  }
 }
 
 object AnyMatchersTest {

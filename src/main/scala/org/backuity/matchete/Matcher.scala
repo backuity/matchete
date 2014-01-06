@@ -18,7 +18,9 @@ package org.backuity.matchete
 
 
 trait Matcher[-T] { outer =>
-  /** if t doesn't conform to the matcher then an exception will be raised */
+  /** if t doesn't conform to the matcher then an exception will be raised
+    * @return the evaluated `t` - this is used by the negation matcher
+    */
   def check( t : => T) : Any
 
   def description : String

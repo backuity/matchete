@@ -129,8 +129,18 @@ trait AnyMatchers extends CoreMatcherSupport {
     case t if t.isEmpty =>
   }
 
+  def beEq[T <: AnyRef](expected: T)(implicit formatter: Formatter[T]) = new EagerMatcher[T] {
+    def description: String = "be eq " + expected
+
+    private def format(obj: T) : String = s"${formatter.format(obj)} (${System.identityHashCode(obj)})"
+
+    protected def eagerCheck(t : T) {
+      failIf( t ne expected, s"${format(t)} is not eq ${format(expected)}" )
+    }
+  }
+
   // we need a manifest to be able to format the failure if the failing result is formatable
-  def not[T : Manifest : Formatter](matcher: Matcher[T]) = new Matcher[T]{
+  def not[T](matcher: Matcher[T])(implicit formatter: Formatter[T], manifest: Manifest[T]) = new Matcher[T]{
     def description = "not " + matcher.description
     def check(t : => T) = {
       val res = try {
@@ -143,8 +153,8 @@ trait AnyMatchers extends CoreMatcherSupport {
       
       res match {
         case Left(eval) =>
-          if( manifest[T].runtimeClass.isAssignableFrom(eval.getClass)) {
-            failWith(implicitly[Formatter[T]].format(eval.asInstanceOf[T]))
+          if( manifest.runtimeClass.isAssignableFrom(eval.getClass)) {
+            failWith(formatter.format(eval.asInstanceOf[T]))
           } else {
             failWith(eval.toString)
           }
