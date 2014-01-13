@@ -139,6 +139,13 @@ trait AnyMatchers extends CoreMatcherSupport {
     }
   }
 
+  def beNull[T <: AnyRef](implicit formatter: Formatter[T]) = new EagerMatcher[T] {
+    protected def eagerCheck(t: T) {
+      failIf(t != null, s"${formatter.format(t)} is not null")
+    }
+    def description: String = "be null"
+  }
+
   // we need a manifest to be able to format the failure if the failing result is formatable
   def not[T](matcher: Matcher[T])(implicit formatter: Formatter[T], manifest: Manifest[T]) = new Matcher[T]{
     def description = "not " + matcher.description
@@ -153,7 +160,9 @@ trait AnyMatchers extends CoreMatcherSupport {
       
       res match {
         case Left(eval) =>
-          if( manifest.runtimeClass.isAssignableFrom(eval.getClass)) {
+          if( eval == null ) {
+            failWith("null")
+          } else if( manifest.runtimeClass.isAssignableFrom(eval.getClass)) {
             failWith(formatter.format(eval.asInstanceOf[T]))
           } else {
             failWith(eval.toString)

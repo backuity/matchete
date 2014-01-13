@@ -192,6 +192,21 @@ class AnyMatchersTest extends JunitMatchers {
       case e => e.getMessage must contain ("List(1)")
     }
   }
+
+  @Test
+  def beNull() {
+    var a = "hello"
+    a must not(beNull[String])
+
+    {a must beNull[String]} must throwAn[AssertionError].withMessage(
+      "'hello' is not null")
+
+    a = null
+    a must beNull[String]
+
+    {a must not(beNull[String])} must throwAn[AssertionError].withMessage(
+      "null should not be null")
+  }
 }
 
 object AnyMatchersTest {
