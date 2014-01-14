@@ -12,7 +12,7 @@ I'll assume you're already familiar with matchers. If not you can take a look at
 
 Import Matchete in your SBT project:
 ```
-libraryDependencies += "org.backuity" %% "matchete" % "1.5" % "test"
+libraryDependencies += "org.backuity" %% "matchete" % "1.6" % "test"
 ```
 
 It can be used along with JUnit by either extending `org.backuity.matchete.JunitMatchers` or importing `org.backuity.matchete.junitMatchers`.
@@ -94,6 +94,18 @@ Set(1,2) must containExactly(
   be_<(3))
 
 List(1,2,3) must containAny(be_<(5), be_>(100), be_>(200))
+```
+
+### For exceptions
+
+```scala
+def bug() { throw new IllegalArgumentException("this is an error message") }
+
+bug must throwAn[IllegalArgumentException]
+
+bug must throwAn[IllegalArgumentException].withMessage("this is an error message")
+
+bug must throwAn[IllegalArgumentException].withMessageContaining("error", "message")
 ```
 
 

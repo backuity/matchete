@@ -58,7 +58,19 @@ trait ExceptionMatchers { this : FailureReporter =>
       def check(t : => Any) = {
         checkThrowable(t) { err =>
           failIfDifferentStrings( err.getMessage, expectedMessage,
-            s"Expected ${expectedException} message '$expectedMessage' but got '${err.getMessage}'")
+            s"Expected $expectedException message '$expectedMessage' but got '${err.getMessage}'")
+        }
+      }
+    }
+
+    def withMessageContaining(content: String*) : Matcher[Any] = new Matcher[Any] {
+      def description = s"throw $article $expectedException with message containing '$content'"
+
+      def check(t : => Any) = {
+        checkThrowable(t) { err =>
+          val absents = content.filterNot(err.getMessage.contains).map( "'" + _ + "'" )
+          failIf( ! absents.isEmpty,
+            s"Exception $expectedException with message '${err.getMessage}' does not contain ${absents.mkString(", ")}")
         }
       }
     }

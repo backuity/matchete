@@ -100,6 +100,32 @@ class ExceptionMatchersTest extends JunitMatchers {
   }
 
   @Test
+  def throwAnExceptionWithMessageContainingShouldPassWhenAllContentIsContained() {
+    def bug() {
+      throw new IllegalArgumentException("this is an unexpected error message")
+    }
+
+    bug() must throwAn[IllegalArgumentException].withMessageContaining("unexpected", "error", "an", "this")
+  }
+
+  @Test
+  def throwAnExceptionWithMessageContainingShouldFailForMissingContent() {
+    def bug() {
+      throw new IllegalArgumentException("this does not contain the expected content")
+    }
+
+    try {
+      bug() must throwAn[IllegalArgumentException].withMessageContaining("damn", "expected", "horse", "blue", "content")
+      failExpectedAssertionError()
+    } catch {
+      case e : AssertionError =>
+        require( e.getMessage == "Exception java.lang.IllegalArgumentException with message 'this does not contain the expected content' " +
+          "does not contain 'damn', 'horse', 'blue'",
+          e.getMessage)
+    }
+  }
+
+  @Test
   def throwAnExceptionLikeShouldFailForNoException() {
     def noBug() {}
 
