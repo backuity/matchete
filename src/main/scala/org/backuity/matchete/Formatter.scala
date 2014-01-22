@@ -30,8 +30,9 @@ object Formatter {
 }
 
 trait Formatters {
+  /** print 'null' if the value is null */
   implicit def anyFormatter[T] : Formatter[T] = new Formatter[T]{
-    def format(t: T): String = t.toString
+    def format(t: T): String = "" + t
   }
   implicit val stringFormatter : Formatter[String] = new Formatter[String]{
     def format(t: String): String = s"'$t'"
