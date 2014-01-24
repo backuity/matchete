@@ -175,6 +175,9 @@ class AnyMatchersTest extends JunitMatchers {
 
     {new A1 must beA[A2]} must throwAn[AssertionError].withMessage(
       "A1() is not a org.backuity.matchete.AnyMatchersTest.A2 it is a org.backuity.matchete.AnyMatchersTest.A1")
+
+    {null.asInstanceOf[A2] must beA[A2]} must throwAn[AssertionError].withMessage(
+      "null is not a org.backuity.matchete.AnyMatchersTest.A2")
   }
 
   @Test

@@ -26,6 +26,14 @@ trait CoreMatcherSupport extends FailureReporter with Formatters with ToMatcherO
     }
   }
 
+  private class NonNullSimpleEagerMatcher[-T](description: String, validate: T => Boolean, failureDescription: T => String, nullMessage: String) extends
+    SimpleEagerMatcher[T](description, validate, failureDescription) {
+    override protected def eagerCheck(t: T) {
+      failIf(t == null, nullMessage)
+      super.eagerCheck(t)
+    }
+  }
+
   private class PartialFunctionMatcher[-T](val description: String, descriptionNegation: String, pf: PartialFunction[T, Unit])(implicit formatter: Formatter[T]) extends EagerMatcher[T] {
     protected def eagerCheck(t: T) {
       if( pf.isDefinedAt(t) ) {
@@ -39,12 +47,32 @@ trait CoreMatcherSupport extends FailureReporter with Formatters with ToMatcherO
   }
 
   /**
+   * A null accepting matcher.
+   *
    * @param description should be the same as the matcher name, for instance haveSize(0) should be "have size 0"
    * @param validate function that returns true if the value matches the expectation
    * @param failureDescription called upon failure, return the message thrown
    */
-  def matcher[T](description: String, validate: T => Boolean, failureDescription: T => String) : Matcher[T] =
+  def nullAcceptingMatcher[T](description: String, validate: T => Boolean, failureDescription: T => String) : Matcher[T] =
     new SimpleEagerMatcher[T](description, validate, failureDescription)
+
+  /**
+   * A non-null matcher.
+   *
+   * @param description should be the same as the matcher name, for instance haveSize(0) should be "have size 0"
+   * @param validate function that returns true if the value matches the expectation
+   * @param failureDescription called upon failure, return the message thrown
+   */
+  def matcher[T](description: String, validate: T => Boolean, failureDescription: T => String, nullMessage : String = "") : Matcher[T] = {
+    val msg = if( nullMessage == "" ) {
+        if( description.startsWith("be") ) {
+          "null is not" + description.substring(2)
+        } else {
+          "null does not " + description
+        }
+      } else nullMessage
+    new NonNullSimpleEagerMatcher[T](description, validate, failureDescription, msg)
+  }
 
   def partialFunctionMatcher[T](description: String, descriptionNegation: String)(pf: PartialFunction[T,Unit])(implicit formatter: Formatter[T]) : Matcher[T] =
     new PartialFunctionMatcher[T](description, descriptionNegation, pf)

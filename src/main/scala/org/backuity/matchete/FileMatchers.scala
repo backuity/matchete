@@ -23,7 +23,7 @@ trait FileMatchers extends MatcherSupport {
   def exist : Matcher[File] = matcher[File](
     description = "exist",
     validate = _.exists(),
-    failureDescription = _.getCanonicalPath + " do not exist")
+    failureDescription = _.getCanonicalPath + " does not exist")
 
   def haveLastModified(time: Long) : Matcher[File] = matcher[File](
     description = "have last-modified " + time,

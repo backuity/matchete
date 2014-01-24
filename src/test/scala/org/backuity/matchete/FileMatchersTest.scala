@@ -26,6 +26,6 @@ class FileMatchersTest extends JunitMatchers with FileMatchers {
     new File(".") must exist
 
     (new File("/that/doesnt/exist") must exist) must throwAn[AssertionError].withMessage(
-      "/that/doesnt/exist do not exist")
+      "/that/doesnt/exist does not exist")
   }
 }
