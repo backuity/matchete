@@ -12,8 +12,10 @@ I'll assume you're already familiar with matchers. If not you can take a look at
 
 Import Matchete in your SBT project:
 ```
-libraryDependencies += "org.backuity" %% "matchete" % "1.6" % "test"
+libraryDependencies += "org.backuity" %% "matchete" % "1.8" % "test"
 ```
+
+You can check the latest version on [Maven Central](http://search.maven.org/#search|gav|1|g%3A%22org.backuity%22%20AND%20a%3A%22matchete_2.10%22).
 
 It can be used along with JUnit by either extending `org.backuity.matchete.JunitMatchers` or importing `org.backuity.matchete.junitMatchers`.
 
