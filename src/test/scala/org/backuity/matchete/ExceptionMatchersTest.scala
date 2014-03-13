@@ -75,6 +75,14 @@ class ExceptionMatchersTest extends JunitMatchers {
   }
 
   @Test
+  def throwAnShouldAcceptSubTypes() {
+    def bug() {
+      throw new IllegalArgumentException("ooops")
+    }
+    bug must throwAn[Exception]
+  }
+
+  @Test
   def throwAnExceptionWithMessageShouldPassForRightMessage() {
     def bug() {
       throw new IllegalArgumentException("ooops")

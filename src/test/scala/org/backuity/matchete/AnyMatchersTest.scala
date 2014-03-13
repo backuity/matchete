@@ -162,8 +162,17 @@ class AnyMatchersTest extends JunitMatchers {
 
     def failure() { throw new RuntimeException("baam") }
 
+    failure() must not(throwAn[IllegalStateException])
+
     { failure() must not(throwAn[Exception]) } must throwAn[AssertionError].withMessage(
       "java.lang.RuntimeException: baam should not throw an java.lang.Exception")
+  }
+
+  @Test
+  def notShouldNotSwallowExpecteeExceptions() {
+    def failure() : Int = throw new RuntimeException("baam")
+
+    { failure() must not(be_<(12)) } must throwA[RuntimeException].withMessage("baam")
   }
 
 

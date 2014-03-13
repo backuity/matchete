@@ -149,26 +149,42 @@ trait AnyMatchers extends CoreMatcherSupport {
   // we need a manifest to be able to format the failure if the failing result is formatable
   def not[T](matcher: Matcher[T])(implicit formatter: Formatter[T], manifest: Manifest[T]) = new Matcher[T]{
     def description = "not " + matcher.description
-    def check(t : => T) = {
-      val res = try {
-        Left(matcher.check(t))
+    def check(t : => T) : Any = {
+      def failWith(formattedEval: String) = fail(formattedEval + " should not " + matcher.description)
+
+      val evalT = try {
+        t
       } catch {
-        case e : Throwable => Right(e)
-      }
-      
-      def failWith(formattedEval: String) { fail(formattedEval + " should not " + matcher.description)}
-      
-      res match {
-        case Left(eval) =>
-          if( eval == null ) {
-            failWith("null")
-          } else if( manifest.runtimeClass.isAssignableFrom(eval.getClass)) {
-            failWith(formatter.format(eval.asInstanceOf[T]))
-          } else {
-            failWith(eval.toString)
+        case e : Throwable =>
+          // let's see if our matcher can cope with that exception
+          try {
+            matcher.check { throw e }
+          } catch {
+            case matcherException if matcherException == e =>
+              // matcher just forwarded the exception, let it pass through the not
+              throw e
+
+            case matcherException : Throwable =>
+              // matcher failed with its own exception, that's correct
+              return matcherException
           }
 
-        case Right(e) => e
+          // matcher can cope with `e`, but that's a `not` so fail it
+          failWith(s"${e.getClass.getName}: ${e.getMessage}")
+      }
+
+      val eval = try {
+        matcher.check(evalT)
+      } catch {
+        case e : Throwable => return e
+      }
+
+      if( eval == null ) {
+        failWith("null")
+      } else if( manifest.runtimeClass.isAssignableFrom(eval.getClass)) {
+        failWith(formatter.format(eval.asInstanceOf[T]))
+      } else {
+        failWith(eval.toString)
       }
     }
   }
