@@ -22,7 +22,7 @@ import sbtrelease.ReleasePlugin
 object MatcheteBuild extends Build {
 
   override def settings = super.settings ++ Seq(
-    scalaVersion := "2.10.3"
+    scalaVersion := "2.11.2"
   )
 
   lazy val main = project.in(file("."))
@@ -36,8 +36,9 @@ object MatcheteBuild extends Build {
       scalacOptions ++= Seq("-deprecation", "-unchecked"),
 
       libraryDependencies ++= Seq(
-        "com.novocode"          % "junit-interface"       % "0.10"      % "test-internal",
-        "junit"                 % "junit"                 % "4.10"      % "optional"),
+        "com.novocode"           %  "junit-interface"       % "0.10"      % "test-internal",
+        "org.scala-lang.modules" %% "scala-xml"             % "1.0.2"     % "optional",
+        "junit"                  %  "junit"                 % "4.10"      % "optional"),
 
       publishMavenStyle := true,
 
@@ -72,6 +73,6 @@ object MatcheteBuild extends Build {
 
   // macro need to be compiled separately
   lazy val testMacro = project.in(file("test-macro")).settings(
-    libraryDependencies += "org.scala-lang" % "scala-reflect" % "2.10.3"
+    libraryDependencies += "org.scala-lang" % "scala-reflect" % "2.11.2"
   )
 }
