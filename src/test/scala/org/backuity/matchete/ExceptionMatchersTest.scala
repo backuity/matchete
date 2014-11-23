@@ -177,4 +177,20 @@ class ExceptionMatchersTest extends JunitMatchers {
       }
     }
   }
+
+  @Test
+  def throwAnExceptionWithShouldFailForWrongAssertion() {
+    def bug() {
+      throw new IllegalStateException("some stuff to check")
+    }
+
+    // ko
+    expectAssertionError("java.lang.IllegalStateException: some stuff to check is not " +
+      "an java.lang.IllegalStateException with a dummy message: " +
+      "'some stuff to check' does not contain 'WTF'") {
+      bug() must throwAn[IllegalStateException].`with`("a dummy message") {
+        case e : IllegalStateException => e.getMessage must contain("WTF")
+      }
+    }
+  }
 }

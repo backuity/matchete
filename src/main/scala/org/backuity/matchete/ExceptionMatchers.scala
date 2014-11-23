@@ -75,20 +75,30 @@ trait ExceptionMatchers { this : FailureReporter =>
       }
     }
 
-    def like(desc: String)(pf : PartialFunction[T,Unit]) : Matcher[Any] = new Matcher[Any] {
-      def description = s"throw $article $expectedException like $desc"
+    def like(desc: String, failMsg: String)(pf: PartialFunction[T,Unit]) : Matcher[Any] = new Matcher[Any] {
+      def description = s"throw $article $expectedException$desc"
 
       def check(t : => Any) = {
         checkThrowable(t) { err =>
-          failIf( !pf.isDefinedAt(err), s"Exception $err is not like $desc")
+          failIf( !pf.isDefinedAt(err), s"Exception $err$failMsg")
           try {
             pf(err)
           } catch {
             case e : Throwable =>
-              fail(s"$err is not $article $expectedException like $desc: ${e.getMessage}")
+              fail(s"$err is not $article $expectedException$desc: ${e.getMessage}")
           }
         }
       }
+    }
+
+    def like(desc: String)(pf : PartialFunction[T,Unit]) : Matcher[Any] = {
+      like(" like " + desc, " is not like " + desc)(pf)
+    }
+    def `with`(desc: String)(pf : PartialFunction[T,Unit]) : Matcher[Any] = {
+      like(" with " + desc, " does not have " + desc)(pf)
+    }
+    def suchAs(pf: PartialFunction[T,Unit]) : Matcher[Any] = {
+      like("", " does not match")(pf)
     }
   }
 
