@@ -15,6 +15,8 @@
  */
 package org.backuity.matchete
 
+import org.backuity.matchete.Diffable.{NestedDiff, BasicDiff, Equal, DiffResult}
+
 import scala.language.reflectiveCalls
 
 trait Sized[T] {
@@ -22,7 +24,7 @@ trait Sized[T] {
 }
 
 trait MatcherComparator[-T] {
-  def checkEqual(actual: T, expected : T)
+  def checkEqual(actual: T, expected : T) : Unit
 }
 
 trait AnyMatchers extends CoreMatcherSupport {
@@ -56,7 +58,7 @@ trait AnyMatchers extends CoreMatcherSupport {
   implicit def setComparator[T](implicit elemFormatter: Formatter[T], setFormatter: Formatter[Set[T]] ) = new MatcherComparator[Set[T]] {
     def checkEqual(actualSet: Set[T], expectedSet: Set[T]) {
       if( actualSet != expectedSet ) {
-        def failWithHint(msg: String) = fail(s"${setFormatter.format(actualSet)} is not equal to ${setFormatter.format(expectedSet)}, $msg")
+        def failWithHint(hint: String) = fail(s"${setFormatter.format(actualSet)} is not equal to ${setFormatter.format(expectedSet)}, $hint")
 
         val missing = expectedSet -- actualSet
         val extra = actualSet -- expectedSet
@@ -91,9 +93,20 @@ trait AnyMatchers extends CoreMatcherSupport {
     }
   }
 
-  implicit def anyComparator[T](implicit formatter: Formatter[T]) = new MatcherComparator[T] {
-    def checkEqual(actual: T, expected: T) {
-      failIf(actual != expected, s"${formatter.format(actual)} is not equal to ${formatter.format(expected)}")
+  implicit def anyComparator[T](implicit formatter: Formatter[T], diffable: Diffable[T]) = new MatcherComparator[T] {
+    def checkEqual(actual: T, expected: T) : Unit = {
+      val diff: DiffResult = diffable.diff(actual, expected)
+      diff match {
+        case Equal => // no-op
+        case _ : BasicDiff => fail(s"${formatter.format(actual)} is not equal to ${formatter.format(expected)}")
+        case nestedDiff : NestedDiff =>
+          val msg = s"${formatter.format(actual)} is not equal to ${formatter.format(expected)}\n" +
+                      s"${nestedDiff.pathValueA} ≠ ${nestedDiff.pathValueB}"
+          nestedDiff.valueA match {
+            case valueAString: String => failIfDifferentStrings(valueAString, nestedDiff.valueB.asInstanceOf[String], msg)
+            case _ => fail(msg)
+          }
+      }
     }
   }
 
@@ -125,7 +138,7 @@ trait AnyMatchers extends CoreMatcherSupport {
     }
   }
 
-  def beEmpty[T <% Any { def isEmpty : Boolean }](implicit formatter: Formatter[T]) : Matcher[T] = be("empty") {
+  def beEmpty[T](implicit ev1: T => {def isEmpty: Boolean}, formatter: Formatter[T]): Matcher[T] = be("empty") {
     case t if t.isEmpty =>
   }
 

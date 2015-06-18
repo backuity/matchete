@@ -33,15 +33,51 @@ class AnyMatchersTest extends JunitMatchers {
     "john" must_== "john"
 
     {Person("john", 12) must beEqualTo(Person("mary", 21))} must throwAn[AssertionError].withMessage(
-      "Person(john,12) is not equal to Person(mary,21)")
+      "Person(john,12) is not equal to Person(mary,21)\nage = 12 ≠ age = 21")
 
     {123 must_== 321} must throwAn[AssertionError].withMessage(
       "123 is not equal to 321")
   }
 
   @Test
+  def beEqualNestedList_Ok(): Unit = {
+    implicit val stuffDiffable : Diffable[Stuff] = Diffable.forFields(_.name)
+    Bucket(List(Flower("john", 12))) must_== Bucket(List(Bike("john", 21, "BMX")))
+  }
+
+  @Test
+  def beEqualNestedList_Error(): Unit = {
+    implicit val stuffDiffable : Diffable[Stuff] = Diffable.forFields(_.name, _.price)
+
+    {Bucket(List(Flower("john", 12))) must_== Bucket(List(Bike("john", 21, "BMX")))} must throwAn[AssertionError].withMessage(
+      """Bucket(List(Flower(john,12))) is not equal to Bucket(List(Bike(john,21,BMX)))
+        |stuffs.(0).price = 12 ≠ stuffs.(0).price = 21""".stripMargin)
+  }
+
+  @Test
+  def beEqualNestedList_Error_DifferentSize(): Unit = {
+
+    {Bucket(List(Flower("john", 12), Flower("dude",12))) must_== Bucket(List(Bike("john", 21, "BMX")))} must throwAn[AssertionError].withMessage(
+      """Bucket(List(Flower(john,12), Flower(dude,12))) is not equal to Bucket(List(Bike(john,21,BMX)))
+        |stuffs.size = 2 ≠ stuffs.size = 1""".stripMargin)
+  }
+
+  @Test
+  def beEqualNestedList_ShouldThrowComparisonFailureForStringFields(): Unit = {
+    implicit val stuffDiffable : Diffable[Stuff] = Diffable.forFields(_.name)
+
+    {Bucket(List(Flower("x",12),Flower("john toto", 12))) must_== Bucket(List(Bike("x",13,"y"),Bike("john X toto", 21, "BMX")))} must throwA[ComparisonFailure].suchAs {
+      case c : ComparisonFailure =>
+        c.getMessage must_== """Bucket(List(Flower(x,12), Flower(john toto,12))) is not equal to Bucket(List(Bike(x,13,y), Bike(john X toto,21,BMX)))
+                               |stuffs.(1).name = john toto ≠ stuffs.(1).name = john X toto expected:<john [X ]toto> but was:<john []toto>""".stripMargin
+        c.getActual must_== "john toto"
+        c.getExpected must_== "john X toto"
+    }
+  }
+
+  @Test
   def beEqualStringShouldThrowComparisonFailure() {
-    {"john" must_== "mary"} must throwAn[ComparisonFailure].like("a comparison failure") {
+    {"john" must_== "mary"} must throwA[ComparisonFailure].suchAs {
       case c : ComparisonFailure =>
         c.getActual must_== "john"
         c.getExpected must_== "mary"
@@ -223,6 +259,14 @@ class AnyMatchersTest extends JunitMatchers {
 
 object AnyMatchersTest {
   case class Person(name: String, age: Int)
+  
+  trait Stuff {
+    def name: String
+    def price: Int
+  }
+  case class Flower(name: String, price: Int) extends Stuff
+  case class Bike(name: String, price: Int, brand: String) extends Stuff
+  case class Bucket(stuffs: List[Stuff])
 
   class A
   case class A1() extends A

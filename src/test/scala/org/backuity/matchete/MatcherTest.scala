@@ -58,7 +58,7 @@ class MatcherTest extends JunitMatchers {
     implicit val customPersonFormatter = Formatter[Person]{ _.name }
 
     {Person("john", 12) must_== Person("mary", 24)} must throwAn[AssertionError].withMessage(
-      "john is not equal to mary")
+      "john is not equal to mary\nage = 12 ≠ age = 24")
 
     {List(Person("john", 12)) must_== List(Person("mary", 24))} must throwAn[AssertionError].withMessage(
       "List(john) is not equal to List(mary), at index 1 expected mary but got john")

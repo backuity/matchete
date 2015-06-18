@@ -20,7 +20,7 @@ import scala.language.experimental.macros
 
 import java.util.regex.Pattern
 
-import scala.reflect.macros.{ Context, TypecheckException }
+import scala.reflect.macros.{blackbox, TypecheckException}
 
 
 /**
@@ -36,9 +36,9 @@ object illTyped {
   def apply(code: String): Unit = macro applyImplNoExp
   def apply(code: String, expected: String): Unit = macro applyImpl
   
-  def applyImplNoExp(c: Context)(code: c.Expr[String]) = applyImpl(c)(code, null)
+  def applyImplNoExp(c: blackbox.Context)(code: c.Expr[String]) = applyImpl(c)(code, null)
   
-  def applyImpl(c: Context)(code: c.Expr[String], expected: c.Expr[String]): c.Expr[Unit] = {
+  def applyImpl(c: blackbox.Context)(code: c.Expr[String], expected: c.Expr[String]): c.Expr[Unit] = {
     import c.universe._
 
     val Expr(Literal(Constant(codeStr: String))) = code
@@ -49,12 +49,12 @@ object illTyped {
     }
 
     try {
-      c.typeCheck(c.parse("{ "+codeStr+" }"))
+      c.typecheck(c.parse("{ "+codeStr+" }"))
       c.abort(c.enclosingPosition, "Type-checking succeeded unexpectedly.\n"+expMsg)
     } catch {
       case e: TypecheckException =>
         val msg = e.getMessage
-        if((expected ne null) && !(expPat.matcher(msg)).matches)
+        if((expected ne null) && !expPat.matcher(msg).matches)
           c.abort(c.enclosingPosition, "Type-checking failed in an unexpected way.\n"+expMsg+"\nActual error: "+msg)
     }
     

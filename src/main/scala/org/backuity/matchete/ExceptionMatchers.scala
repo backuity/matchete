@@ -105,6 +105,8 @@ trait ExceptionMatchers { this : FailureReporter =>
   /** fail if the thrown exception isn't a `T` or a `T` subclass */
   def throwA[T <: Throwable: Manifest] = throwMatcher[T]("a")
 
+//  def throwA[T <: Throwable : Manifest : Equal](exception: T) =
+
   /** fail if the thrown exception isn't a `T` or a `T` subclass */
   def throwAn[T <: Throwable : Manifest] = throwMatcher[T]("an")
 }

@@ -22,7 +22,7 @@ import sbtrelease.ReleasePlugin
 object MatcheteBuild extends Build {
 
   override def settings = super.settings ++ Seq(
-    scalaVersion := "2.11.2"
+    scalaVersion := "2.11.6"
   )
 
   lazy val main = project.in(file("."))
@@ -70,9 +70,14 @@ object MatcheteBuild extends Build {
     )
     .settings(ReleasePlugin.releaseSettings : _*)
     .dependsOn(testMacro % "test-internal->compile")
+    .dependsOn(macros)
 
   // macro need to be compiled separately
   lazy val testMacro = project.in(file("test-macro")).settings(
-    libraryDependencies += "org.scala-lang" % "scala-reflect" % "2.11.2"
+    libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value
+  )
+
+  lazy val macros = project.in(file("macros")).settings(
+    libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value
   )
 }
