@@ -69,6 +69,7 @@ object MatcheteBuild extends Build {
       libraryDependencies ++= Seq(
         "com.novocode"           %  "junit-interface"       % "0.10"      % "test-internal",
         "org.scala-lang.modules" %% "scala-xml"             % "1.0.2"     % "optional",
+        "org.json4s"             %% "json4s-native"         % "3.2.9"     % "optional",
         "junit"                  %  "junit"                 % "4.10"      % "optional")
     )
     .settings(releaseSettings : _*)
