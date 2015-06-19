@@ -1,3 +1,7 @@
+## 1.14 _(2015-06-19)_
+
+* Fixed build configuration, the published matchete POM was incorrect and the macros weren't published.
+
 ## 1.13 _(2015-06-19)_
 
 * Collection matchers now accept `TraversableOnce`, which make it possible to match against an `Iterator`
