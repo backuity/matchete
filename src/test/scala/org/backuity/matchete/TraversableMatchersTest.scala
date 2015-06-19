@@ -26,6 +26,7 @@ class TraversableMatchersTest extends JunitMatchers {
   @Test
   def forAll() {
     List(1,2,3,4) must forAll(be_<(10))
+    Iterator(1,2,3) must forAll(be_<(10))
     List(2,4,6,8) must forAll(be_<(10) and beLike("an even number") { case n if n % 2 == 0 => })
     Set(2,4,6,8) must forAll(be_<(10) and beLike("an even number") { case n if n % 2 == 0 => })
 
@@ -42,6 +43,7 @@ class TraversableMatchersTest extends JunitMatchers {
   def contain() {
     List(1,2,3) must contain(be_<(2))
     List(1,2,3) must contain(be_<(3))
+    Iterator(1,2,3) must contain(be_<(3))
     List(1,2,3) must contain(be_<(2), be_<(2))
 
     {List() must contain(be_<(2))} must throwAn[AssertionError].withMessage(
@@ -76,6 +78,7 @@ class TraversableMatchersTest extends JunitMatchers {
   @Test
   def containAny() {
     List(1,2,3) must containAny(be_<(5), be_>(100), be_>(200))
+    Iterator(1,2,3) must containAny(be_<(5), be_>(100), be_>(200))
     List(1,2,3) must containAny(be_>(100), be_>(200), be_<(5))
     List(1) must containAny(be_>(5), be_==(1))
     List(1,2,3) must containAny(be_==(2))
@@ -95,6 +98,7 @@ class TraversableMatchersTest extends JunitMatchers {
   @Test
   def testContainElements() {
     List(1,2) must containElements(1,2)
+    Iterator(1,2,3) must containElements(1,2,3)
     List(2,1) must containElements(1,2)
     List(2,2,2,3) must containElements(3,2,2,2)
     Set("a","b","c") must containElements("b","a","c")
@@ -120,6 +124,7 @@ class TraversableMatchersTest extends JunitMatchers {
   @Test
   def containExactly() {
     List(1,2) must containExactly(be_<(2), be_<(3))
+    Iterator(1,2,3) must containExactly(be_<(10), be_<(20), be_<(30))
     Set(1,2) must containExactly(be_<(2), be_<(3))
     Set(1,2) must containExactly(be_==(1), be_==(2))
   }

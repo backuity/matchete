@@ -23,10 +23,11 @@ import scala.util.control.Breaks
 
 trait TraversableMatchers extends CoreMatcherSupport {
 
-   def forAll[T](m : Matcher[T]) = new EagerMatcher[Traversable[T]] {
+   def forAll[T](m : Matcher[T]) = new EagerMatcher[TraversableOnce[T]] {
     def description = s"for all ${m.description}"
 
-    def eagerCheck(elems : Traversable[T]) {
+    def eagerCheck(once : TraversableOnce[T]) {
+      val elems = asTraversable(once)
       for( elem <- elems ) {
         try {
           m.check(elem)
@@ -41,18 +42,18 @@ trait TraversableMatchers extends CoreMatcherSupport {
    * Valid if all the matchers are contained.
    * @note an element might satisfy multiple matchers, it is the caller responsibility to not pass overlapping matchers
    */
-  def contain[T](matchers: Matcher[T]*) = new EagerMatcher[Traversable[T]] {
+  def contain[T](matchers: Matcher[T]*) = new EagerMatcher[TraversableOnce[T]] {
     def description = s"contain ${matchers.map(_.description).mkString(", ")}"
 
-    def eagerCheck(elems: Traversable[T]) {
-      checkAnElementForEveryMatcher(matchers, elems)
+    def eagerCheck(once: TraversableOnce[T]) {
+      checkAnElementForEveryMatcher(matchers, asTraversable(once))
     }
   }
 
-  def containAny[T](matchers: Matcher[T]*) = new EagerMatcher[Traversable[T]] {
+  def containAny[T](matchers: Matcher[T]*) = new EagerMatcher[TraversableOnce[T]] {
     def description = s"contain any of ${matchers.map(_.description).mkString(", ")}"
 
-    protected def eagerCheck(t: Traversable[T]) {
+    protected def eagerCheck(t: TraversableOnce[T]) {
       import Breaks._
       breakable {
         val errors = for( matcher <- matchers ) yield {
@@ -67,10 +68,12 @@ trait TraversableMatchers extends CoreMatcherSupport {
   }
 
   /** order does not matter and elements might be duplicated */
-  def containElements[T](others: T*)(implicit formatter: Formatter[T]) = new EagerMatcher[Traversable[T]] {
+  def containElements[T](others: T*)(implicit formatter: Formatter[T]) = new EagerMatcher[TraversableOnce[T]] {
     def description = "contain the same elements as " + others
 
-    protected def eagerCheck(elems: Traversable[T]) {
+    protected def eagerCheck(once: TraversableOnce[T]) {
+      val elems = asTraversable(once)
+
       val missingElements: Seq[T] = others.toSeq.diff(elems.toSeq)
       val extraElements : Seq[T] = elems.toSeq.diff(others.toSeq)
 
@@ -99,11 +102,11 @@ trait TraversableMatchers extends CoreMatcherSupport {
    *
    * It is the caller responsibility to not pass overlapping matchers.
    */
-  def containExactly[T](matchers: Matcher[T]*) = new EagerMatcher[Traversable[T]] {
+  def containExactly[T](matchers: Matcher[T]*) = new EagerMatcher[TraversableOnce[T]] {
     def description = s"contain exactly (${matchers.map(_.description).mkString(", ")})"
 
-    def eagerCheck(elems: Traversable[T]) {
-
+    def eagerCheck(once: TraversableOnce[T]) {
+      val elems = asTraversable(once)
       val tooFewTooMany = if( elems.size < matchers.size ) Some("too few") else if( elems.size > matchers.size ) Some("too many") else None
       val sizeErrorMessage = tooFewTooMany.map( " has " + _ + s" elements, expected ${matchers.size}, got ${elems.size}")
       def failPrefix = sizeErrorMessage.map( _ + ";" ).getOrElse("")
@@ -202,6 +205,13 @@ trait TraversableMatchers extends CoreMatcherSupport {
         } else {
           ":\n- " + failingElems.mkString("\n- ")
         }))
+    }
+  }
+
+  private def asTraversable[T](once : TraversableOnce[T]) : Traversable[T] = {
+    once match {
+      case traversable : Traversable[T] => traversable
+      case nonTraversable => nonTraversable.toList
     }
   }
 }
