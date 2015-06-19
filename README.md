@@ -12,7 +12,7 @@ I'll assume you're already familiar with matchers. If not you can take a look at
 
 Import Matchete in your SBT project:
 ```
-libraryDependencies += "org.backuity" %% "matchete" % "1.11" % "test"
+libraryDependencies += "org.backuity" %% "matchete" % "1.13" % "test"
 ```
 
 You can check the latest version on [Maven Central](http://search.maven.org/#search|gav|1|g%3A%22org.backuity%22%20AND%20a%3A%22matchete_2.10%22).
@@ -108,8 +108,53 @@ bug must throwAn[IllegalArgumentException]
 bug must throwAn[IllegalArgumentException].withMessage("this is an error message")
 
 bug must throwAn[IllegalArgumentException].withMessageContaining("error", "message")
+
+parse() must throwA[ParsingError].`with`("a correct offset") { case ParsingError(msg,offset) => offset must_== 3 }
 ```
 
+### For value objects
+
+When comparing data structures you often end-up doing a field-by-field comparison:
+```scala
+data.field1 must_== exectedField1
+data.field2 must_== exectedField2
+// ...
+data.fieldN must_== exectedFieldN
+```
+
+Backuity does this for you, for free!
+
+```scala
+case class Person(name: String, age: Int, address: Address)
+case class Address(street: String)
+
+Person("john",12, Address("street")) must_== Person("john",12,Address("different street"))    
+```
+Will throw the following `ComparisonFailure` (with `JunitMatchers`):
+```
+org.junit.ComparisonFailure: Person(john,12,Address(street)) is not equal to Person(john,12,Address(different street))
+address.street = street ≠ address.street = different street 
+Expected :different street
+Actual   :street
+```  
+
+And for non-case-classes, you can define your own `Diffable`:
+```scala
+class Person(val name: String, val age: Int, val address: Address)
+class Address(val street: String)
+
+implicit lazy val diffablePerson : Diffable[Person] = Diffable.forFields(_.name, _.age, _.address)
+implicit lazy val diffableAddress : Diffable[Address] = Diffable.forFields(_.street)
+
+new Person("john",12, new Address("street")) must_== new Person("john",12,new Address("different street"))
+```
+Will throw the following `ComparisonFailure` (with `JunitMatchers`):
+```
+org.junit.ComparisonFailure: org.backuity.matchete.XX$Person@46d56d67 is not equal to org.backuity.matchete.XX$Person@d8355a8
+address.street = street ≠ address.street = different street 
+Expected :different street
+Actual   :street
+```  
 
 ## Nice error messages
 
