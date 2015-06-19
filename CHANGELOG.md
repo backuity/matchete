@@ -1,3 +1,19 @@
+## 1.15 _(2015-06-19)_
+
+* Added JSON matchers:
+  ```scala
+  """{
+    |  "firstName": "john",
+    |  "lastName":"doe", "age":43
+    |}
+  """.stripMargin must equalJson(
+  """{
+    |  "nationality": "cowboy",
+    |  "firstName": "john doe"
+    |}
+  """.stripMargin)
+  ```
+
 ## 1.14 _(2015-06-19)_
 
 * Fixed build configuration, the published matchete POM was incorrect and the macros weren't published.
