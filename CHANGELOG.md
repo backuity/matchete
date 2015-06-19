@@ -1,6 +1,7 @@
 ## 1.15 _(2015-06-19)_
 
 * Added JSON matchers:
+
   ```scala
   """{
     |  "firstName": "john",
