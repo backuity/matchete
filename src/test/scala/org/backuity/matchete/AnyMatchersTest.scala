@@ -97,17 +97,25 @@ class AnyMatchersTest extends JunitMatchers {
     List(1,2,3) must_== List(1,2,3)
     Seq(1,2,3) must_== List(1,2,3)
 
+    {List(Person("John", 21), Person("Jane", 32)) must_== List(Person("John", 21), Person("Jane", 12))} must throwAn[AssertionError].withMessage(
+    """List(Person(John,21), Person(Jane,32)) is not equal to List(Person(John,21), Person(Jane,12))
+      |(1).age = 32 ≠ (1).age = 12""".stripMargin)
+
     {Seq(1,2,3) must_== List(1,3,2)} must throwAn[AssertionError].withMessage(
-      "List(1, 2, 3) is not equal to List(1, 3, 2), at index 2 expected 3 but got 2")
+      """List(1, 2, 3) is not equal to List(1, 3, 2)
+        |(1) = 2 ≠ (1) = 3""".stripMargin)
 
     {Seq(1,2,3) must_== List(1,2,3,4)} must throwAn[AssertionError].withMessage(
-      "List(1, 2, 3) is not equal to List(1, 2, 3, 4), at index 4 expected 4 but got no element")
+      """List(1, 2, 3) is not equal to List(1, 2, 3, 4)
+        |size = 3 ≠ size = 4""".stripMargin)
 
     {Seq(1,2,3) must_== List(1)} must throwAn[AssertionError].withMessage(
-      "List(1, 2, 3) is not equal to List(1), at index 2 expected no element but got 2")
+      """List(1, 2, 3) is not equal to List(1)
+        |size = 3 ≠ size = 1""".stripMargin)
 
     {Seq.empty[Int] must_== List(1,2,3,4)} must throwAn[AssertionError].withMessage(
-      "List() is not equal to List(1, 2, 3, 4), at index 1 expected 1 but got no element")
+      """List() is not equal to List(1, 2, 3, 4)
+        |size = 0 ≠ size = 4""".stripMargin)
   }
 
   @Test

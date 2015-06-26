@@ -29,32 +29,6 @@ trait MatcherComparator[-T] {
 
 trait AnyMatchers extends CoreMatcherSupport {
 
-  implicit def seqComparator[T](implicit elemFormatter: Formatter[T], seqFormatter: Formatter[Seq[T]]) = new MatcherComparator[Seq[T]] {
-    def checkEqual(actualSeq: Seq[T], expectedSeq: Seq[T]) {
-      val expectedIt = expectedSeq.iterator
-      val actualIt = actualSeq.iterator
-      var idx = 1
-
-      def failAtIndex(msg: String) = fail(s"${seqFormatter.format(actualSeq)} is not equal to ${seqFormatter.format(expectedSeq)}, at index $idx $msg")
-
-      while(expectedIt.hasNext) {
-        val expectedNext = expectedIt.next()
-        if( ! actualIt.hasNext ) {
-          failAtIndex(s"expected ${elemFormatter.format(expectedNext)} but got no element")
-        } else {
-          val actualNext = actualIt.next()
-          if( expectedNext != actualNext ) {
-            failAtIndex(s"expected ${elemFormatter.format(expectedNext)} but got ${elemFormatter.format(actualNext)}")
-          }
-        }
-        idx += 1
-      }
-      if( actualIt.hasNext ) {
-        failAtIndex(s"expected no element but got ${elemFormatter.format(actualIt.next())}")
-      }
-    }
-  }
-
   implicit def setComparator[T](implicit elemFormatter: Formatter[T], setFormatter: Formatter[Set[T]] ) = new MatcherComparator[Set[T]] {
     def checkEqual(actualSet: Set[T], expectedSet: Set[T]) {
       if( actualSet != expectedSet ) {
