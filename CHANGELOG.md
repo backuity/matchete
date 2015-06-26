@@ -1,3 +1,7 @@
+## 1.16 _(2015-06-26)_
+
+* Removed `MatcherComparator[Seq[T]]` in favor of `Diffable[Seq[T]]` as the latest is more composable 
+
 ## 1.15 _(2015-06-19)_
 
 * Added JSON matchers:

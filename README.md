@@ -10,10 +10,22 @@ I'll assume you're already familiar with matchers. If not you can take a look at
 
 ### Simple to use
 
-Import Matchete in your SBT project:
-```
-libraryDependencies += "org.backuity" %% "matchete" % "1.15" % "test"
-```
+Import Matchete in your project:
+
+* SBT
+    ```
+    libraryDependencies += "org.backuity" %% "matchete" % "1.16" % "test"
+    ```
+    
+* Maven
+    ```xml
+    <dependency>
+        <groupId>org.backuity</groupId>
+        <artifactId>matchete_2.11</artifactId>
+        <version>1.16</version>
+        <scope>test</scope>
+    </dependency>
+    ```
 
 You can check the latest version on [Maven Central](http://search.maven.org/#search|gav|1|g%3A%22org.backuity%22%20AND%20a%3A%22matchete_2.10%22).
 
