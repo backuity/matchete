@@ -1,4 +1,3 @@
-import sbtrelease.ReleasePlugin
 
 lazy val commonSettings = Seq(
   organization := "org.backuity",
@@ -38,7 +37,7 @@ lazy val releaseSettings = Seq(
           <url>https://github.com/backuitist</url>
         </developer>
       </developers>
-) ++ ReleasePlugin.releaseSettings
+)
 
 lazy val main = project.in(file(".")).
   settings(commonSettings : _*).
