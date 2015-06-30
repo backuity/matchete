@@ -1,6 +1,7 @@
-package org.backuity.matchete
+package org.backuity.matchete.xml
 
-import org.junit.{ComparisonFailure, Test}
+import org.backuity.matchete.JunitMatchers
+import org.junit.Test
 
 class XmlMatchersTest extends JunitMatchers with XmlMatchers {
 

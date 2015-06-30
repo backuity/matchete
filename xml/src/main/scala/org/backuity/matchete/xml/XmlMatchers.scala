@@ -1,3 +1,5 @@
+package org.backuity.matchete.xml
+
 /*
  * Copyright 2013 Bruno Bieth
  *
@@ -13,9 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.backuity.matchete
 
-import scala.xml.{NodeSeq, Node}
+import org.backuity.matchete.{EagerMatcher, Formatter, Matcher, MatcherSupport}
+
+import scala.xml.{Node, NodeSeq}
 
 trait XmlMatchers extends MatcherSupport {
 

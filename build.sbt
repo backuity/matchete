@@ -39,21 +39,59 @@ lazy val releaseSettings = Seq(
       </developers>
 )
 
-lazy val main = project.in(file(".")).
+lazy val root = project.in(file(".")).
+  aggregate(core,junit,json,xml,macros)
+
+lazy val core = project.in(file("core")).
   settings(commonSettings : _*).
   settings(
-    name := "matchete",
+    name := "matchete-core",
 
     libraryDependencies ++= Seq(
-      "com.novocode"           %  "junit-interface"       % "0.10"      % "test-internal",
-      "org.scala-lang.modules" %% "scala-xml"             % "1.0.2"     % "optional",
-      "org.json4s"             %% "json4s-native"         % "3.2.9"     % "optional",
-      "junit"                  %  "junit"                 % "4.10"      % "optional")
+      "com.novocode"           %  "junit-interface"       % "0.10"      % "test-internal",          
+      "junit"                  %  "junit"                 % "4.10"      % "test")
   ).
   settings(releaseSettings : _*).
   dependsOn(testMacro % "test-internal->compile").
-  dependsOn(macros).
-  aggregate(macros)
+  dependsOn(macros)
+
+lazy val junit = project.in(file("junit")).
+  settings(commonSettings : _*).
+    settings(
+      name := "matchete-junit",
+
+      libraryDependencies ++= Seq(
+        "com.novocode"           %  "junit-interface"       % "0.10"      % "test-internal",
+        "junit"                  %  "junit"                 % "4.10")
+    ).
+    settings(releaseSettings : _*).
+    dependsOn(core)
+
+lazy val json = project.in(file("json")).
+  settings(commonSettings : _*).
+    settings(
+      name := "matchete-json",
+
+      libraryDependencies ++= Seq(
+        "com.novocode"           %  "junit-interface"       % "0.10"      % "test-internal",
+        "junit"                  %  "junit"                 % "4.10"      % "test",
+        "org.json4s"             %% "json4s-native"         % "3.2.9")
+    ).
+    settings(releaseSettings : _*).
+    dependsOn(core,junit)
+
+lazy val xml = project.in(file("xml")).
+  settings(commonSettings : _*).
+    settings(
+      name := "matchete-xml",
+
+      libraryDependencies ++= Seq(
+        "com.novocode"           %  "junit-interface"       % "0.10"      % "test-internal",
+        "junit"                  %  "junit"                 % "4.10"      % "test",
+        "org.scala-lang.modules" %% "scala-xml"             % "1.0.2")
+    ).
+    settings(releaseSettings : _*).
+    dependsOn(core,junit)
 
 // macros need to be compiled separately
 
