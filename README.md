@@ -122,6 +122,8 @@ bug must throwAn[IllegalArgumentException].withMessage("this is an error message
 bug must throwAn[IllegalArgumentException].withMessageContaining("error", "message")
 
 parse() must throwA[ParsingError].`with`("a correct offset") { case ParsingError(msg,offset) => offset must_== 3 }
+
+parse() must throwA[ParsingError].suchAs { case ParsingError(msg,offset) => offset must_== 3 }
 ```
 
 ### For value objects
