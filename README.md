@@ -66,21 +66,21 @@ trait Matcher[-T] {
 Matchete is type-safe by default:
 
 ```scala
-"hello" must_== 5
-5 must_== 10.0
-List(1,2,3) must_== Set(1,2,3)
-List(1,2,3) must_== Seq(1,2,3)
+// each one of the following line produces a COMPILATION ERROR
+
+"hello" must_== 5 // type mismatch found Int(5) required String
+5 must_== 10.0 // type mismatch found Double(10.0) required Int
+List(1,2,3) must_== Set(1,2,3) // type mismatch found scala.collection.immutable.Set[Int] required List[Int]
+List(1,2,3) must_== Seq(1,2,3) // type mismatch found Seq[Int] required List[Int]
 ```
 
-won't compile, but
+but
 
 ```scala
 val name = "john"
-name must_== "john"
-Seq(1,2,3) must_== List(1,2,3) // matchers are contravariant, List being a Seq this works
+name must_== "john" // OK
+Seq(1,2,3) must_== List(1,2,3) // OK : List[Int] conforms to Seq[Int]
 ```
-
-will compile.
 
 
 ## Convenient matchers
