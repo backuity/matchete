@@ -145,6 +145,35 @@ object Diffable {
             Equal
           }
       """
+    } else if( tag.tpe <:< typeOf[Map[_,_]]) {
+      val valueType : c.Type = tag.tpe.typeArgs(1)
+      q"""
+          if( a != b ) {
+            val missingKeys = (a.keySet -- b.keySet) ++ (b.keySet -- a.keySet)
+            missingKeys.headOption match {
+              case Some(missingKey) =>
+                NestedDiff(a,b,"get(" + missingKey + ")",BasicDiff(a.get(missingKey),b.get(missingKey)))
+
+              case None =>
+                (a.find {
+                  case (k,v) => b(k) != v
+                }) match {
+                  case Some((k,v)) =>
+                    implicitly[Diffable[$valueType]].diff(a(k),b(k)) match {
+                      case Equal =>
+                        BasicDiff(a,b) // shouldn't happen
+
+                      case diff : SomeDiff =>
+                        NestedDiff(a,b,"get(" + k + ")",diff)
+                    }
+
+                  case None => BasicDiff(a,b)
+                }
+            }
+          } else {
+            Equal
+          }
+       """
     } else {
       q"""if( a != b ) {
               BasicDiff(a, b)
