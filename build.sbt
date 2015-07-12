@@ -40,6 +40,10 @@ lazy val releaseSettings = Seq(
 )
 
 lazy val root = project.in(file(".")).
+  settings(releaseSettings : _*).
+  settings(
+    publishArtifact := false
+  ).
   aggregate(core,junit,json,xml,macros)
 
 lazy val core = project.in(file("core")).
