@@ -27,9 +27,7 @@ object Formatter {
   def apply[T](f : T => String) : Formatter[T] = new Formatter[T] {
     def format(t: T ) : String = f(t)
   }
-}
 
-trait Formatters {
   /** print 'null' if the value is null */
   implicit def anyFormatter[T] : Formatter[T] = new Formatter[T]{
     def format(t: T): String = "" + t

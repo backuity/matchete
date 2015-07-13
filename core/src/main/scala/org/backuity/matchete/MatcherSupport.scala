@@ -18,7 +18,7 @@ package org.backuity.matchete
 
 
 /** Helper to build the core matchers */
-trait CoreMatcherSupport extends FailureReporter with Formatters with ToMatcherOps {
+trait CoreMatcherSupport extends FailureReporter with ToMatcherOps {
 
   private class SimpleEagerMatcher[-T](val description: String, validate: T => Boolean, failureDescription: T => String) extends EagerMatcher[T] {
     protected def eagerCheck(t: T) {
