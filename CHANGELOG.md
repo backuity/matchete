@@ -1,3 +1,23 @@
+## 1.19 _(2015-07-13)_
+
+* Fix Diffable generation for polymorphic case classes (such as TupleN)
+
+## 1.18 _(2015-07-13)_
+
+* Add a `Diffable[Set[T]]`
+
+## 1.17 _(2015-07-12)_
+
+* Split matchete into multiple artefacts:
+
+  - matchete-junit (depends on core)
+  - matchete-json (depends on core)
+  - matchete-xml (depends on core)
+  - matchete-core (depends on macros)
+  - matchete-macros
+
+  People should therefore change their dependency toward `matchete-junit`.
+
 ## 1.16 _(2015-06-26)_
 
 * Removed `MatcherComparator[Seq[T]]` in favor of `Diffable[Seq[T]]` as the latest is more composable 
