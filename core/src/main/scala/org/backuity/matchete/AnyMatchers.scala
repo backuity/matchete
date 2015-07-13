@@ -15,7 +15,7 @@
  */
 package org.backuity.matchete
 
-import org.backuity.matchete.Diffable.{NestedDiff, BasicDiff, Equal, DiffResult}
+import org.backuity.matchete.Diffable._
 
 import scala.language.reflectiveCalls
 
@@ -44,22 +44,27 @@ trait AnyMatchers extends CoreMatcherSupport {
       diff match {
         case Equal => // no-op
 
-        case BasicDiff(a,b,reasons) =>
-          val reasonsString = if( reasons.isEmpty ) "" else {
-            ":\n * " + reasons.mkString("\n * ")
-          }
-          val msg = s"${formatter.format(actual)} is not equal to ${formatter.format(expected)}$reasonsString"
-          a match {
-            case aString : String => failIfDifferentStrings(aString,b.asInstanceOf[String],msg)
-            case _ => fail(msg)
+        case diff : SomeDiff =>
+          val reasonsString = if( diff.reasons.isEmpty ) "" else {
+            ":\n * " + diff.reasons.mkString("\n * ")
           }
 
-        case nestedDiff : NestedDiff =>
-          val msg = s"${formatter.format(actual)} is not equal to ${formatter.format(expected)}\n" +
-                      s"${nestedDiff.pathValueA} ≠ ${nestedDiff.pathValueB}"
-          nestedDiff.valueA match {
-            case valueAString: String => failIfDifferentStrings(valueAString, nestedDiff.valueB.asInstanceOf[String], msg)
-            case _ => fail(msg)
+          diff match {
+
+            case BasicDiff(a,b,_) =>
+              val msg = s"${formatter.format(actual)} is not equal to ${formatter.format(expected)}$reasonsString"
+              a match {
+                case aString : String => failIfDifferentStrings(aString,b.asInstanceOf[String],msg)
+                case _ => fail(msg)
+              }
+
+            case nestedDiff : NestedDiff =>
+              val msg = s"${formatter.format(actual)} is not equal to ${formatter.format(expected)}\n" +
+                s"Got     : ${nestedDiff.pathValueA}\nExpected: ${nestedDiff.pathValueB}$reasonsString"
+              nestedDiff.valueA match {
+                case valueAString: String => failIfDifferentStrings(valueAString, nestedDiff.valueB.asInstanceOf[String], msg)
+                case _ => fail(msg)
+              }
           }
       }
     }

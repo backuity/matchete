@@ -30,33 +30,41 @@ object Diffable {
   sealed trait DiffResult
   case object Equal extends DiffResult
   sealed trait SomeDiff extends DiffResult {
+    def valueA : Any
+    def valueB : Any
 
     /** @return a readable string containing the path of the source of the diff along with the value of the first element */
-    val pathValueA : String = formatPathWithValue(_.sourceA)
-
-    val valueA : Any = value(_.sourceA)
+    def pathValueA : String = formatPathWithValue(valueA)
 
     /** @return a readable string containing the path of the source of the diff along with the value of the second element */
-    val pathValueB : String = formatPathWithValue(_.sourceB)
+    def pathValueB : String = formatPathWithValue(valueB)
 
-    val valueB : Any = value(_.sourceB)
+    def path : String = path0("")
 
-    private def formatPathWithValue(f : BasicDiff => Any, nestedPrefix : String = "", basicPrefix : String = "") : String = {
-      this match {
-        case basic: BasicDiff => basicPrefix + f(basic).toString
-        case NestedDiff(_,_,path, nested) => nestedPrefix + path + nested.formatPathWithValue(f, ".", " = ")
-      }
-    }
+    private[Diffable] def path0(prefix: String) : String
 
-    private def value(f : BasicDiff => Any) : Any = {
-      this match {
-        case basic: BasicDiff => f(basic)
-        case NestedDiff(_,_,_,nested) => nested.value(f)
-      }
+    def reasons: List[String]
+
+    private def formatPathWithValue(value: Any) : String = {
+      if( path.isEmpty ) value.toString else path + " = " + value
     }
   }
-  case class BasicDiff(sourceA: Any, sourceB: Any, reasons : List[String] = Nil) extends SomeDiff
-  case class NestedDiff(sourceA: Any, sourceB: Any, origin: String, detail: SomeDiff) extends SomeDiff
+  case class BasicDiff(sourceA: Any, sourceB: Any, reasons : List[String] = Nil) extends SomeDiff {
+    def valueA = sourceA
+    def valueB = sourceB
+    private[Diffable] def path0(prefix: String) : String = prefix
+  }
+  case class NestedDiff(sourceA: Any, sourceB: Any, origin: String, detail: SomeDiff) extends SomeDiff {
+    def valueA = detail.valueA
+    def valueB = detail.valueB
+    private[Diffable] def path0(prefix: String) : String = {
+      val newPrefix = if( prefix.isEmpty ) origin else {
+        prefix + {if( origin.isEmpty ) "" else { "." + origin }}
+      }
+      detail.path0(newPrefix)
+    }
+    def reasons = detail.reasons
+  }
 
   implicit def materializeDiffable[T] : Diffable[T] = macro materializeDiffImpl[T]
 
@@ -181,19 +189,33 @@ object Diffable {
     q"""
         val formatter = implicitly[_root_.org.backuity.matchete.Formatter[$elementType]]
         val missingElements = b -- a
-        var reasons : _root_.scala.collection.immutable.List[_root_.java.lang.String] = Nil
-        if( missingElements.nonEmpty ) {
-          reasons = ("missing elements: " + formatter.formatAll(missingElements)) :: reasons
-        }
-
         val extraElements = a -- b
-        if( extraElements.nonEmpty ) {
-          reasons = ("extra elements: " + formatter.formatAll(extraElements)) :: reasons
-        }
 
-        if( reasons.isEmpty ) {
+        if( missingElements.isEmpty && extraElements.isEmpty ) {
+
           _root_.org.backuity.matchete.Diffable.Equal
+
+        } else if( missingElements.size == 1 && extraElements.size == 1 ) {
+
+          // special case, we'll diff that one element
+          implicitly[_root_.org.backuity.matchete.Diffable[$elementType]].diff(extraElements.head, missingElements.head) match {
+            case _root_.org.backuity.matchete.Diffable.Equal =>
+              _root_.org.backuity.matchete.Diffable.BasicDiff(a,b) // heck they are different!
+
+            case someDiff : _root_.org.backuity.matchete.Diffable.SomeDiff =>
+              _root_.org.backuity.matchete.Diffable.NestedDiff(a,b,"<some-element>",someDiff)
+          }
+
         } else {
+          var reasons : _root_.scala.collection.immutable.List[_root_.java.lang.String] = _root_.scala.collection.immutable.Nil
+          if( missingElements.nonEmpty ) {
+            reasons = ("missing elements: " + formatter.formatAll(missingElements)) :: reasons
+          }
+
+          if( extraElements.nonEmpty ) {
+            reasons = ("extra elements: " + formatter.formatAll(extraElements)) :: reasons
+          }
+
           _root_.org.backuity.matchete.Diffable.BasicDiff(a,b,reasons)
         }
     """

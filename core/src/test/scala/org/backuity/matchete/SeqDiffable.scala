@@ -17,7 +17,8 @@ class SeqDiffable extends JunitMatchers {
 
     {Bucket(List(Flower("john", 12))) must_== Bucket(List(Bike("john", 21, "BMX")))} must throwAn[AssertionError].withMessage(
       """Bucket(List(Flower(john,12))) is not equal to Bucket(List(Bike(john,21,BMX)))
-        |stuffs.(0).price = 12 ≠ stuffs.(0).price = 21""".stripMargin)
+        |Got     : stuffs.(0).price = 12
+        |Expected: stuffs.(0).price = 21""".stripMargin)
   }
 
   @Test
@@ -25,7 +26,8 @@ class SeqDiffable extends JunitMatchers {
 
     {Bucket(List(Flower("john", 12), Flower("dude",12))) must_== Bucket(List(Bike("john", 21, "BMX")))} must throwAn[AssertionError].withMessage(
       """Bucket(List(Flower(john,12), Flower(dude,12))) is not equal to Bucket(List(Bike(john,21,BMX)))
-        |stuffs.size = 2 ≠ stuffs.size = 1""".stripMargin)
+        |Got     : stuffs.size = 2
+        |Expected: stuffs.size = 1""".stripMargin)
   }
 
   @Test
@@ -35,7 +37,8 @@ class SeqDiffable extends JunitMatchers {
     {Bucket(List(Flower("x",12),Flower("john toto", 12))) must_== Bucket(List(Bike("x",13,"y"),Bike("john X toto", 21, "BMX")))} must throwA[ComparisonFailure].suchAs {
       case c : ComparisonFailure =>
         c.getMessage must_== """Bucket(List(Flower(x,12), Flower(john toto,12))) is not equal to Bucket(List(Bike(x,13,y), Bike(john X toto,21,BMX)))
-                               |stuffs.(1).name = john toto ≠ stuffs.(1).name = john X toto expected:<john [X ]toto> but was:<john []toto>""".stripMargin
+                               |Got     : stuffs.(1).name = john toto
+                               |Expected: stuffs.(1).name = john X toto expected:<john [X ]toto> but was:<john []toto>""".stripMargin
         c.getActual must_== "john toto"
         c.getExpected must_== "john X toto"
     }
@@ -48,22 +51,27 @@ class SeqDiffable extends JunitMatchers {
 
     {List(Person("John", 21), Person("Jane", 32)) must_== List(Person("John", 21), Person("Jane", 12))} must throwAn[AssertionError].withMessage(
       """List(Person(John,21), Person(Jane,32)) is not equal to List(Person(John,21), Person(Jane,12))
-        |(1).age = 32 ≠ (1).age = 12""".stripMargin)
+        |Got     : (1).age = 32
+        |Expected: (1).age = 12""".stripMargin)
 
     {Seq(1,2,3) must_== List(1,3,2)} must throwAn[AssertionError].withMessage(
       """List(1, 2, 3) is not equal to List(1, 3, 2)
-        |(1) = 2 ≠ (1) = 3""".stripMargin)
+        |Got     : (1) = 2
+        |Expected: (1) = 3""".stripMargin)
 
     {Seq(1,2,3) must_== List(1,2,3,4)} must throwAn[AssertionError].withMessage(
       """List(1, 2, 3) is not equal to List(1, 2, 3, 4)
-        |size = 3 ≠ size = 4""".stripMargin)
+        |Got     : size = 3
+        |Expected: size = 4""".stripMargin)
 
     {Seq(1,2,3) must_== List(1)} must throwAn[AssertionError].withMessage(
       """List(1, 2, 3) is not equal to List(1)
-        |size = 3 ≠ size = 1""".stripMargin)
+        |Got     : size = 3
+        |Expected: size = 1""".stripMargin)
 
     {Seq.empty[Int] must_== List(1,2,3,4)} must throwAn[AssertionError].withMessage(
       """List() is not equal to List(1, 2, 3, 4)
-        |size = 0 ≠ size = 4""".stripMargin)
+        |Got     : size = 0
+        |Expected: size = 4""".stripMargin)
   }
 }
