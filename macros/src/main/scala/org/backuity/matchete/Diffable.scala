@@ -55,7 +55,7 @@ object Diffable {
       }
     }
   }
-  case class BasicDiff(sourceA: Any, sourceB: Any) extends SomeDiff
+  case class BasicDiff(sourceA: Any, sourceB: Any, reasons : List[String] = Nil) extends SomeDiff
   case class NestedDiff(sourceA: Any, sourceB: Any, origin: String, detail: SomeDiff) extends SomeDiff
 
   implicit def materializeDiffable[T] : Diffable[T] = macro materializeDiffImpl[T]
@@ -111,76 +111,15 @@ object Diffable {
     val diffLogic = if( tag.tpe.typeSymbol.isClass &&
                         tag.tpe.typeSymbol.asClass.isCaseClass ) {
 
-      // diffable for case class
-
-      val caseAttributes = tag.tpe.members.collect {
-        case m: MethodSymbol if m.isCaseAccessor => m
-      }.toList
-
-      val implicits = caseAttributes.map { ca =>
-        q"""implicitly[Diffable[${ca.typeSignature.resultType}]].diff(a.$ca, b.$ca) match {
-               case Equal => // OK
-               case diff : SomeDiff =>
-                  return NestedDiff(a,b,${ca.name.toString},diff)
-            }
-         """
-      }
-
-      q"""..$implicits
-          Equal
-       """
+      materializeCaseClassDiffable(c)(tag)
     } else if( tag.tpe <:< typeOf[Seq[_]] ) {
-      // uses the index as the path element
-      q"""
-          if( a.size != b.size ) {
-            NestedDiff(a,b,"size",BasicDiff(a.size, b.size))
-          } else {
-            for( i <- 0 until a.size ) {
-              implicitly[Diffable[${tag.tpe.typeArgs.head}]].diff(a(i), b(i)) match {
-                case Equal => // OKAY
-                case diff : SomeDiff =>
-                  return NestedDiff(a,b,"(" + i + ")",diff)
-              }
-            }
-            Equal
-          }
-      """
+      materializeSeqDiffable(c)(tag)
     } else if( tag.tpe <:< typeOf[Map[_,_]]) {
-      val valueType : c.Type = tag.tpe.typeArgs(1)
-      q"""
-          if( a != b ) {
-            val missingKeys = (a.keySet -- b.keySet) ++ (b.keySet -- a.keySet)
-            missingKeys.headOption match {
-              case Some(missingKey) =>
-                NestedDiff(a,b,"get(" + missingKey + ")",BasicDiff(a.get(missingKey),b.get(missingKey)))
-
-              case None =>
-                (a.find {
-                  case (k,v) => b(k) != v
-                }) match {
-                  case Some((k,v)) =>
-                    implicitly[Diffable[$valueType]].diff(a(k),b(k)) match {
-                      case Equal =>
-                        BasicDiff(a,b) // shouldn't happen
-
-                      case diff : SomeDiff =>
-                        NestedDiff(a,b,"get(" + k + ")",diff)
-                    }
-
-                  case None => BasicDiff(a,b)
-                }
-            }
-          } else {
-            Equal
-          }
-       """
+      materializeMapDiffable(c)(tag)
+    } else if( tag.tpe <:< typeOf[Set[_]]) {
+      materializeSetDiffable(c)(tag)
     } else {
-      q"""if( a != b ) {
-              BasicDiff(a, b)
-           } else {
-              Equal
-           }
-       """
+      materializeAnyDiffable(c)
     }
 
     q"""new _root_.org.backuity.matchete.Diffable[$tag] {
@@ -192,4 +131,112 @@ object Diffable {
           }
      """
   }
+
+  def materializeCaseClassDiffable[T: c.WeakTypeTag](c : blackbox.Context)(tag: c.WeakTypeTag[T]) : c.Tree = {
+    import c.universe._
+
+    val caseAttributes = tag.tpe.members.collect {
+      case m: MethodSymbol if m.isCaseAccessor => m
+    }.toList
+
+    val implicits = caseAttributes.map { ca =>
+      q"""implicitly[Diffable[${ca.typeSignature.resultType}]].diff(a.$ca, b.$ca) match {
+               case Equal => // OK
+               case diff : SomeDiff =>
+                  return NestedDiff(a,b,${ca.name.toString},diff)
+            }
+         """
+    }
+
+    q"""..$implicits
+          Equal
+       """
+  }
+
+  def materializeSeqDiffable[T: c.WeakTypeTag](c : blackbox.Context)(tag: c.WeakTypeTag[T]) : c.Tree = {
+    import c.universe._
+    // uses the index as the path element
+    val elementType = tag.tpe.typeArgs.head
+    q"""
+        if( a.size != b.size ) {
+          NestedDiff(a,b,"size",BasicDiff(a.size, b.size))
+        } else {
+          for( i <- 0 until a.size ) {
+            implicitly[Diffable[$elementType]].diff(a(i), b(i)) match {
+              case Equal => // OKAY
+              case diff : SomeDiff =>
+                return NestedDiff(a,b,"(" + i + ")",diff)
+            }
+          }
+          Equal
+        }
+    """
+  }
+
+  def materializeSetDiffable[T: c.WeakTypeTag](c : blackbox.Context)(tag: c.WeakTypeTag[T]) : c.Tree = {
+    import c.universe._
+    val elementType = tag.tpe.typeArgs.head
+    q"""
+        val formatter = implicitly[Formatter[$elementType]]
+        val missingElements = b -- a
+        var reasons : List[String] = Nil
+        if( missingElements.nonEmpty ) {
+          reasons = ("missing elements: " + formatter.formatAll(missingElements)) :: reasons
+        }
+
+        val extraElements = a -- b
+        if( extraElements.nonEmpty ) {
+          reasons = ("extra elements: " + formatter.formatAll(extraElements)) :: reasons
+        }
+
+        if( reasons.isEmpty ) {
+          Equal
+        } else {
+          BasicDiff(a,b,reasons)
+        }
+    """
+  }
+
+  def materializeMapDiffable[T: c.WeakTypeTag](c : blackbox.Context)(tag: c.WeakTypeTag[T]) : c.Tree = {
+    import c.universe._
+    val valueType : c.Type = tag.tpe.typeArgs(1)
+    q"""
+        if( a != b ) {
+          val missingKeys = (a.keySet -- b.keySet) ++ (b.keySet -- a.keySet)
+          missingKeys.headOption match {
+            case Some(missingKey) =>
+              NestedDiff(a,b,"get(" + missingKey + ")",BasicDiff(a.get(missingKey),b.get(missingKey)))
+
+            case None =>
+              (a.find {
+                case (k,v) => b(k) != v
+              }) match {
+                case Some((k,v)) =>
+                  implicitly[Diffable[$valueType]].diff(a(k),b(k)) match {
+                    case Equal =>
+                      BasicDiff(a,b) // shouldn't happen
+
+                    case diff : SomeDiff =>
+                      NestedDiff(a,b,"get(" + k + ")",diff)
+                  }
+
+                case None => BasicDiff(a,b)
+              }
+          }
+        } else {
+          Equal
+        }
+     """
+  }
+
+  def materializeAnyDiffable[T: c.WeakTypeTag](c : blackbox.Context) : c.Tree = {
+    import c.universe._
+    q"""if( a != b ) {
+          BasicDiff(a, b)
+        } else {
+          Equal
+        }
+    """
+  }
+
 }

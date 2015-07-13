@@ -20,7 +20,7 @@ import org.junit.{ComparisonFailure, Test}
 
 class AnyMatchersTest extends JunitMatchers {
 
-  import AnyMatchersTest._
+  import TestUtil._
 
   @Test
   def beEqual() {
@@ -40,42 +40,6 @@ class AnyMatchersTest extends JunitMatchers {
   }
 
   @Test
-  def beEqualNestedList_Ok(): Unit = {
-    implicit val stuffDiffable : Diffable[Stuff] = Diffable.forFields(_.name)
-    Bucket(List(Flower("john", 12))) must_== Bucket(List(Bike("john", 21, "BMX")))
-  }
-
-  @Test
-  def beEqualNestedList_Error(): Unit = {
-    implicit val stuffDiffable : Diffable[Stuff] = Diffable.forFields(_.name, _.price)
-
-    {Bucket(List(Flower("john", 12))) must_== Bucket(List(Bike("john", 21, "BMX")))} must throwAn[AssertionError].withMessage(
-      """Bucket(List(Flower(john,12))) is not equal to Bucket(List(Bike(john,21,BMX)))
-        |stuffs.(0).price = 12 ≠ stuffs.(0).price = 21""".stripMargin)
-  }
-
-  @Test
-  def beEqualNestedList_Error_DifferentSize(): Unit = {
-
-    {Bucket(List(Flower("john", 12), Flower("dude",12))) must_== Bucket(List(Bike("john", 21, "BMX")))} must throwAn[AssertionError].withMessage(
-      """Bucket(List(Flower(john,12), Flower(dude,12))) is not equal to Bucket(List(Bike(john,21,BMX)))
-        |stuffs.size = 2 ≠ stuffs.size = 1""".stripMargin)
-  }
-
-  @Test
-  def beEqualNestedList_ShouldThrowComparisonFailureForStringFields(): Unit = {
-    implicit val stuffDiffable : Diffable[Stuff] = Diffable.forFields(_.name)
-
-    {Bucket(List(Flower("x",12),Flower("john toto", 12))) must_== Bucket(List(Bike("x",13,"y"),Bike("john X toto", 21, "BMX")))} must throwA[ComparisonFailure].suchAs {
-      case c : ComparisonFailure =>
-        c.getMessage must_== """Bucket(List(Flower(x,12), Flower(john toto,12))) is not equal to Bucket(List(Bike(x,13,y), Bike(john X toto,21,BMX)))
-                               |stuffs.(1).name = john toto ≠ stuffs.(1).name = john X toto expected:<john [X ]toto> but was:<john []toto>""".stripMargin
-        c.getActual must_== "john toto"
-        c.getExpected must_== "john X toto"
-    }
-  }
-
-  @Test
   def beEqualStringShouldThrowComparisonFailure() {
     {"john" must_== "mary"} must throwA[ComparisonFailure].suchAs {
       case c : ComparisonFailure =>
@@ -90,50 +54,6 @@ class AnyMatchersTest extends JunitMatchers {
 
     {Array(1,2,3,4) must_== Array(1,2,4,3)} must throwAn[AssertionError].withMessage(
       "Array(1, 2, 3, 4) is not equal to Array(1, 2, 4, 3)")
-  }
-
-  @Test
-  def beEqual_Seq() {
-    List(1,2,3) must_== List(1,2,3)
-    Seq(1,2,3) must_== List(1,2,3)
-
-    {List(Person("John", 21), Person("Jane", 32)) must_== List(Person("John", 21), Person("Jane", 12))} must throwAn[AssertionError].withMessage(
-    """List(Person(John,21), Person(Jane,32)) is not equal to List(Person(John,21), Person(Jane,12))
-      |(1).age = 32 ≠ (1).age = 12""".stripMargin)
-
-    {Seq(1,2,3) must_== List(1,3,2)} must throwAn[AssertionError].withMessage(
-      """List(1, 2, 3) is not equal to List(1, 3, 2)
-        |(1) = 2 ≠ (1) = 3""".stripMargin)
-
-    {Seq(1,2,3) must_== List(1,2,3,4)} must throwAn[AssertionError].withMessage(
-      """List(1, 2, 3) is not equal to List(1, 2, 3, 4)
-        |size = 3 ≠ size = 4""".stripMargin)
-
-    {Seq(1,2,3) must_== List(1)} must throwAn[AssertionError].withMessage(
-      """List(1, 2, 3) is not equal to List(1)
-        |size = 3 ≠ size = 1""".stripMargin)
-
-    {Seq.empty[Int] must_== List(1,2,3,4)} must throwAn[AssertionError].withMessage(
-      """List() is not equal to List(1, 2, 3, 4)
-        |size = 0 ≠ size = 4""".stripMargin)
-  }
-
-  @Test
-  def beEqual_Set() {
-    Set(1,2,3) must_== Set(1,2,3)
-    Set(1,2,3) must_== Set(3,2,1)
-
-    {Set(1,2,3) must_== Set(1,2)} must throwAn[AssertionError].withMessage(
-      "Set(1, 2, 3) is not equal to Set(1, 2), element 3 was not expected")
-
-    {Set(2,3) must_== Set(1,2,3)} must throwAn[AssertionError].withMessage(
-      "Set(2, 3) is not equal to Set(1, 2, 3), element 1 is missing")
-
-    {Set(2,3) must_== Set(1,2,3,4)} must throwAn[AssertionError].withMessage(
-      "Set(2, 3) is not equal to Set(1, 2, 3, 4), elements 1, 4 are missing")
-
-    {Set(2,3,5) must_== Set(1,2,3,4)} must throwAn[AssertionError].withMessage(
-      "Set(2, 3, 5) is not equal to Set(1, 2, 3, 4), elements 1, 4 are missing and element 5 was not expected")
   }
 
   @Test
@@ -219,7 +139,6 @@ class AnyMatchersTest extends JunitMatchers {
     { failure() must not(be_<(12)) } must throwA[RuntimeException].withMessage("baam")
   }
 
-
   @Test
   def beA() {
     List(1,2) must beA[List[Int]]
@@ -227,10 +146,10 @@ class AnyMatchersTest extends JunitMatchers {
     new A1 must beA[A]
 
     {new A1 must beA[A2]} must throwAn[AssertionError].withMessage(
-      "A1() is not a org.backuity.matchete.AnyMatchersTest.A2 it is a org.backuity.matchete.AnyMatchersTest.A1")
+      "A1() is not a org.backuity.matchete.TestUtil.A2 it is a org.backuity.matchete.TestUtil.A1")
 
     {null.asInstanceOf[A2] must beA[A2]} must throwAn[AssertionError].withMessage(
-      "null is not a org.backuity.matchete.AnyMatchersTest.A2")
+      "null is not a org.backuity.matchete.TestUtil.A2")
   }
 
   @Test
@@ -265,22 +184,3 @@ class AnyMatchersTest extends JunitMatchers {
   }
 }
 
-object AnyMatchersTest {
-  case class Person(name: String, age: Int)
-  
-  trait Stuff {
-    def name: String
-    def price: Int
-  }
-  case class Flower(name: String, price: Int) extends Stuff
-  case class Bike(name: String, price: Int, brand: String) extends Stuff
-  case class Bucket(stuffs: List[Stuff])
-
-  class A
-  case class A1() extends A
-  case class A2() extends A
-
-  class ASizedClass {
-    def size = 12
-  }
-}

@@ -4,7 +4,7 @@ import org.junit.Test
 
 class MapDiffableTest extends JunitMatchers {
 
-  import AnyMatchersTest._
+  import TestUtil._
 
   @Test
   def diffMaps_sameKeysDifferentValues(): Unit = {

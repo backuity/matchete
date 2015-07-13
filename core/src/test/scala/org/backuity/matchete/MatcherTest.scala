@@ -53,7 +53,7 @@ class MatcherTest extends JunitMatchers {
 
   @Test
   def customFormatter() {
-    import AnyMatchersTest.Person
+    import TestUtil.Person
 
     implicit val customPersonFormatter = Formatter[Person]{ _.name }
 

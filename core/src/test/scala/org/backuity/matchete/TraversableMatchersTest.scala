@@ -21,7 +21,7 @@ import org.junit.Test
 
 class TraversableMatchersTest extends JunitMatchers {
 
-  import TraversableMatchersTest.Person
+  import TestUtil.Person
 
   @Test
   def forAll() {
@@ -202,8 +202,4 @@ class TraversableMatchersTest extends JunitMatchers {
     // example from scaladoc
     List(1,2,4) must containExactly(be_<=(2), be_>(3), be_>=(4))
   }
-}
-
-object TraversableMatchersTest {
-  case class Person(name: String, age: Int)
 }

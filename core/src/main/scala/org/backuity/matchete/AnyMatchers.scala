@@ -29,30 +29,6 @@ trait MatcherComparator[-T] {
 
 trait AnyMatchers extends CoreMatcherSupport {
 
-  implicit def setComparator[T](implicit elemFormatter: Formatter[T], setFormatter: Formatter[Set[T]] ) = new MatcherComparator[Set[T]] {
-    def checkEqual(actualSet: Set[T], expectedSet: Set[T]) {
-      if( actualSet != expectedSet ) {
-        def failWithHint(hint: String) = fail(s"${setFormatter.format(actualSet)} is not equal to ${setFormatter.format(expectedSet)}, $hint")
-
-        val missing = expectedSet -- actualSet
-        val extra = actualSet -- expectedSet
-        val missingMsg = if( missing.size > 1 ) {
-            List(s"elements ${missing.mkString(", ")} are missing")
-          } else if( missing.size == 1 ) {
-            List(s"element ${missing.head} is missing")
-          } else {
-            Nil
-          }
-        val extraMsg = if( extra.size > 1 ) {
-            List(s"elements ${extra.mkString(", ")} were not expected")
-          } else if(extra.size == 1) {
-            List(s"element ${extra.head} was not expected")
-          } else Nil
-        failWithHint((missingMsg ::: extraMsg).mkString(" and "))
-      }
-    }
-  }
-
   implicit def arrayComparator[T](implicit arrayFormatter: Formatter[Array[T]]) = new MatcherComparator[Array[T]] {
     def checkEqual(actualArr: Array[T], expectedArr: Array[T]) {
       if( expectedArr.deep != actualArr.deep ) {
@@ -72,7 +48,11 @@ trait AnyMatchers extends CoreMatcherSupport {
       val diff: DiffResult = diffable.diff(actual, expected)
       diff match {
         case Equal => // no-op
-        case _ : BasicDiff => fail(s"${formatter.format(actual)} is not equal to ${formatter.format(expected)}")
+        case BasicDiff(a,b,reasons) =>
+          val reasonsString = if( reasons.isEmpty ) "" else {
+            ":\n * " + reasons.mkString("\n * ")
+          }
+          fail(s"${formatter.format(actual)} is not equal to ${formatter.format(expected)}$reasonsString")
         case nestedDiff : NestedDiff =>
           val msg = s"${formatter.format(actual)} is not equal to ${formatter.format(expected)}\n" +
                       s"${nestedDiff.pathValueA} ≠ ${nestedDiff.pathValueB}"
