@@ -134,13 +134,13 @@ object Diffable {
 
   def materializeCaseClassDiffable[T: c.WeakTypeTag](c : blackbox.Context)(tag: c.WeakTypeTag[T]) : c.Tree = {
     import c.universe._
-
+    
     val caseAttributes = tag.tpe.members.collect {
       case m: MethodSymbol if m.isCaseAccessor => m
     }.toList
 
     val implicits = caseAttributes.map { ca =>
-      q"""implicitly[Diffable[${ca.typeSignature.resultType}]].diff(a.$ca, b.$ca) match {
+      q"""implicitly[Diffable[${ca.typeSignature.resultType.asSeenFrom(tag.tpe,tag.tpe.typeSymbol)}]].diff(a.$ca, b.$ca) match {
                case Equal => // OK
                case diff : SomeDiff =>
                   return NestedDiff(a,b,${ca.name.toString},diff)
