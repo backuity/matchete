@@ -29,6 +29,7 @@ trait MatcherComparator[-T] {
 
 trait AnyMatchers extends CoreMatcherSupport {
 
+  // TODO move that to the Diffable materializer
   implicit def arrayComparator[T](implicit arrayFormatter: Formatter[Array[T]]) = new MatcherComparator[Array[T]] {
     def checkEqual(actualArr: Array[T], expectedArr: Array[T]) {
       if( expectedArr.deep != actualArr.deep ) {
@@ -37,22 +38,22 @@ trait AnyMatchers extends CoreMatcherSupport {
     }
   }
 
-  implicit def stringComparator(implicit formatter: Formatter[String]) = new MatcherComparator[String] {
-    def checkEqual(actual: String, expected: String) {
-      failIfDifferentStrings(actual, expected, s"${formatter.format(actual)} is not equal to ${formatter.format(expected)}")
-    }
-  }
-
   implicit def anyComparator[T](implicit formatter: Formatter[T], diffable: Diffable[T]) = new MatcherComparator[T] {
     def checkEqual(actual: T, expected: T) : Unit = {
       val diff: DiffResult = diffable.diff(actual, expected)
       diff match {
         case Equal => // no-op
+
         case BasicDiff(a,b,reasons) =>
           val reasonsString = if( reasons.isEmpty ) "" else {
             ":\n * " + reasons.mkString("\n * ")
           }
-          fail(s"${formatter.format(actual)} is not equal to ${formatter.format(expected)}$reasonsString")
+          val msg = s"${formatter.format(actual)} is not equal to ${formatter.format(expected)}$reasonsString"
+          a match {
+            case aString : String => failIfDifferentStrings(aString,b.asInstanceOf[String],msg)
+            case _ => fail(msg)
+          }
+
         case nestedDiff : NestedDiff =>
           val msg = s"${formatter.format(actual)} is not equal to ${formatter.format(expected)}\n" +
                       s"${nestedDiff.pathValueA} ≠ ${nestedDiff.pathValueB}"
