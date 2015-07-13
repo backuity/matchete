@@ -114,7 +114,7 @@ trait AnyMatchers extends CoreMatcherSupport {
     def description: String = "be null"
   }
 
-  // we need a manifest to be able to format the failure if the failing result is formatable
+  // we need a manifest to be able to format the failure if the failing result is formattable
   def not[T](matcher: Matcher[T])(implicit formatter: Formatter[T], manifest: Manifest[T]) = new Matcher[T]{
     def description = "not " + matcher.description
     def check(t : => T) : Any = {

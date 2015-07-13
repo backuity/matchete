@@ -13,9 +13,7 @@ class SetDiffable extends JunitMatchers {
 
   @Test
   def diffMustShowMissingElements(): Unit = {
-    implicit val personFormatter : Formatter[Person] = new Formatter[Person] {
-      override def format(t: Person): String = s"${t.name}(${t.age})"
-    }
+    implicit val personFormatter : Formatter[Person] = Formatter[Person] { person => s"${person.name}(${person.age})" }
 
     {Set(1, 2, 3) must_== Set(1, 2, 4)} must throwAn[AssertionError].withMessage(
       """Set(1, 2, 3) is not equal to Set(1, 2, 4):
