@@ -50,21 +50,4 @@ class MatcherTest extends JunitMatchers {
     {5 must (be_>(10) or be_<(1))} must throwAn[AssertionError].withMessage(
       "5 is not > 10 and 5 is not < 1")
   }
-
-  @Test
-  def customFormatter() {
-    import TestUtil.Person
-
-    implicit val customPersonFormatter = Formatter[Person]{ _.name }
-
-    {Person("john", 12) must_== Person("mary", 24)} must throwAn[AssertionError].withMessage(
-      """john is not equal to mary
-        |Got     : age = 12
-        |Expected: age = 24""".stripMargin)
-
-    {List(Person("john", 12)) must_== List(Person("mary", 24))} must throwAn[AssertionError].withMessage(
-      """List(john) is not equal to List(mary)
-        |Got     : (0).age = 12
-        |Expected: (0).age = 24""".stripMargin)
-  }
 }

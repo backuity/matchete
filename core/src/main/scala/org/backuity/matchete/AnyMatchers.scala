@@ -38,33 +38,16 @@ trait AnyMatchers extends CoreMatcherSupport {
     }
   }
 
-  implicit def anyComparator[T](implicit formatter: Formatter[T], diffable: Diffable[T]) = new MatcherComparator[T] {
+  implicit def anyComparator[T](implicit formatter: Formatter[SomeDiff[T]], diffable: Diffable[T]) = new MatcherComparator[T] {
     def checkEqual(actual: T, expected: T) : Unit = {
-      val diff: DiffResult = diffable.diff(actual, expected)
+      val diff: DiffResult[T] = diffable.diff(actual, expected)
       diff match {
         case Equal => // no-op
-
-        case diff : SomeDiff =>
-          val reasonsString = if( diff.reasons.isEmpty ) "" else {
-            ":\n * " + diff.reasons.mkString("\n * ")
-          }
-
-          diff match {
-
-            case BasicDiff(a,b,_) =>
-              val msg = s"${formatter.format(actual)} is not equal to ${formatter.format(expected)}$reasonsString"
-              a match {
-                case aString : String => failIfDifferentStrings(aString,b.asInstanceOf[String],msg)
-                case _ => fail(msg)
-              }
-
-            case nestedDiff : NestedDiff =>
-              val msg = s"${formatter.format(actual)} is not equal to ${formatter.format(expected)}\n" +
-                s"Got     : ${nestedDiff.pathValueA}\nExpected: ${nestedDiff.pathValueB}$reasonsString"
-              nestedDiff.valueA match {
-                case valueAString: String => failIfDifferentStrings(valueAString, nestedDiff.valueB.asInstanceOf[String], msg)
-                case _ => fail(msg)
-              }
+        case diff : SomeDiff[T] =>
+          val msg = formatter.format(diff)
+          diff.valueA match {
+            case aString : String => failIfDifferentStrings(aString, diff.valueB.asInstanceOf[String], msg)
+            case _ => fail(msg)
           }
       }
     }

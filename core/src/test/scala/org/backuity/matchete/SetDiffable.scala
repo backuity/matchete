@@ -38,7 +38,13 @@ class SetDiffable extends JunitMatchers {
         Set(Person("mary", 10)),
         Set(Person("doe", 99), Person("john", 12)))
     } must throwAn[AssertionError].withMessage(
-      """List(Set(mary(10)), Set(john(12), doe(23))) is not equal to List(Set(mary(10)), Set(doe(99), john(12)))
+      """
+        |  List(Set(mary(10)), Set(john(12), doe(23)))
+        |
+        |is not equal to
+        |
+        |  List(Set(mary(10)), Set(doe(99), john(12)))
+        |
         |Got     : (1).<some-element>.age = 23
         |Expected: (1).<some-element>.age = 99""".stripMargin)
   }

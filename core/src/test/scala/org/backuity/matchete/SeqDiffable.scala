@@ -36,9 +36,16 @@ class SeqDiffable extends JunitMatchers {
 
     {Bucket(List(Flower("x",12),Flower("john toto", 12))) must_== Bucket(List(Bike("x",13,"y"),Bike("john X toto", 21, "BMX")))} must throwA[ComparisonFailure].suchAs {
       case c : ComparisonFailure =>
-        c.getMessage must_== """Bucket(List(Flower(x,12), Flower(john toto,12))) is not equal to Bucket(List(Bike(x,13,y), Bike(john X toto,21,BMX)))
-                               |Got     : stuffs.(1).name = john toto
-                               |Expected: stuffs.(1).name = john X toto expected:<john [X ]toto> but was:<john []toto>""".stripMargin
+        c.getMessage must_==
+          """
+            |  Bucket(List(Flower(x,12), Flower(john toto,12)))
+            |
+            |is not equal to
+            |
+            |  Bucket(List(Bike(x,13,y), Bike(john X toto,21,BMX)))
+            |
+            |Got     : stuffs.(1).name = john toto
+            |Expected: stuffs.(1).name = john X toto expected:<john [X ]toto> but was:<john []toto>""".stripMargin
         c.getActual must_== "john toto"
         c.getExpected must_== "john X toto"
     }
