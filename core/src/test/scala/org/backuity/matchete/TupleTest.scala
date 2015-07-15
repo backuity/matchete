@@ -10,8 +10,8 @@ class TupleTest extends JunitMatchers {
 
     {(12,"john doe",true) must_== (12,"john doex",true)} must throwA[ComparisonFailure].withMessage(
       """(12,'john doe',true) is not equal to (12,'john doex',true)
-        |Got     : _2 = john doe
-        |Expected: _2 = john doex expected:<john doe[x]> but was:<john doe[]>""".stripMargin
+        |Got     : _2 = 'john doe'
+        |Expected: _2 = 'john doex' expected:<john doe[x]> but was:<john doe[]>""".stripMargin
     )
   }
 }

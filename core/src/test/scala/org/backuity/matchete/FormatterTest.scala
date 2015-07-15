@@ -1,6 +1,6 @@
 package org.backuity.matchete
 
-import org.junit.{ComparisonFailure, Test}
+import org.junit.{Ignore, ComparisonFailure, Test}
 
 class FormatterTest extends JunitMatchers {
 
@@ -82,9 +82,16 @@ class FormatterTest extends JunitMatchers {
         |
         |  Map(1 -> 'a', 2 -> 'a', 3 -> 'c', 4 -> 'd')
         |
-        |Got     : get(2) = b
-        |Expected: get(2) = a expected:<[a]> but was:<[b]>""".stripMargin
+        |Got     : get(2) = 'b'
+        |Expected: get(2) = 'a' expected:<[a]> but was:<[b]>""".stripMargin
     )
+  }
+
+  @Test @Ignore // TODO
+  def setFormatterShouldSortSetIfPossible(): Unit = {
+    {
+      Set(1,2,8,5,4,3) must_== Set(3,4,5,1,6,2,9)
+    }
   }
 
   @Test
@@ -110,5 +117,70 @@ class FormatterTest extends JunitMatchers {
         |
         |Got     : get(23).age = 12
         |Expected: get(23).age = 21""".stripMargin)
+  }
+
+  @Test
+  def diffLongElements(): Unit = {
+    {
+      List(Set(Person("this is a looooooooooooooooooooooooooooooooooooooooooooooooo00000000000000000000000000000000ng name", 1234567890),
+               Person("johnny", 23))) must_==
+      List(Set(Person("johnny", 2345678),
+               Person("this is a looooooooooooooooooooooooooooooooooooooooooooooooo00000000000000000000000000000000ng name", 1234567890),
+               Person("maryjane", 234),
+               Person("toto",1),
+               Person("toto",2),
+               Person("toto",3),
+               Person("toto",4),
+               Person("toto",5),
+               Person("toto",6),
+               Person("toto",7)))
+    } must throwAn[AssertionError].withMessage(
+      """
+        |  List(
+        |    Set(
+        |      Person(this is a looooooooooooooooooooooooooooooooooooooooooooooooo00000000000000000000000000000000ng name,1234567890),
+        |      Person(johnny,23)))
+        |
+        |is not equal to
+        |
+        |  List(
+        |    Set(
+        |      Person(toto,6),
+        |      Person(toto,4),
+        |      Person(this is a looooooooooooooooooooooooooooooooooooooooooooooooo00000000000000000000000000000000ng name,1234567890),
+        |      Person(toto,5),
+        |      Person(toto,3),
+        |      Person(toto,2),
+        |      Person(johnny,2345678),
+        |      Person(toto,1),
+        |      Person(maryjane,234),
+        |      Person(toto,7)))
+        |
+        |Got     : (0) = Set(
+        |                  Person(this is a looooooooooooooooooooooooooooooooooooooooooooooooo00000000000000000000000000000000ng name,1234567890),
+        |                  Person(johnny,23))
+        |Expected: (0) = Set(
+        |                  Person(toto,6),
+        |                  Person(toto,4),
+        |                  Person(this is a looooooooooooooooooooooooooooooooooooooooooooooooo00000000000000000000000000000000ng name,1234567890),
+        |                  Person(toto,5),
+        |                  Person(toto,3),
+        |                  Person(toto,2),
+        |                  Person(johnny,2345678),
+        |                  Person(toto,1),
+        |                  Person(maryjane,234),
+        |                  Person(toto,7))
+        |Reasons:
+        | * extra elements: Person(johnny,23)
+        | * missing elements: Person(toto,6),
+        |                     Person(toto,4),
+        |                     Person(toto,5),
+        |                     Person(toto,3),
+        |                     Person(toto,2),
+        |                     Person(johnny,2345678),
+        |                     Person(toto,1),
+        |                     Person(maryjane,234),
+        |                     Person(toto,7)""".stripMargin
+    )
   }
 }

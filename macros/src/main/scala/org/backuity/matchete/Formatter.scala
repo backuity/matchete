@@ -16,14 +16,12 @@
 
 package org.backuity.matchete
 
-import org.backuity.matchete.Diffable.{NestedDiff, BasicDiff, SomeDiff}
+import org.backuity.matchete.Diffable.{BasicDiff, NestedDiff, SomeDiff}
 
-import scala.collection.SortedMap
+import scala.collection.{SortedSet, SortedMap}
 
 trait Formatter[-T] {
   def format(t : T) : String
-
-  def formatAll(elems: Traversable[T]) : String = elems.map(format).mkString(", ")
 }
 
 object Formatter extends UnorderedMapFormatter {
@@ -42,6 +40,12 @@ object Formatter extends UnorderedMapFormatter {
     }
   }
 
+//  implicit def orderedSetFormatter[T : Formatter : Ordering] : Formatter[Set[T]] = new Formatter[Set[T]] {
+//    override def format(t: Set[T]): String = {
+//      traversableFormatter[T].format(SortedSet(t.toSeq : _*))
+//    }
+//  }
+
   implicit def diffFormatter[T](implicit formatter: Formatter[T]) : Formatter[SomeDiff[T]] = new Formatter[SomeDiff[T]] {
     override def format(diff: SomeDiff[T]): String = {
 
@@ -58,14 +62,19 @@ object Formatter extends UnorderedMapFormatter {
       }
 
       val reasonsString = if( diff.reasons.isEmpty ) "" else {
-        ":\n * " + diff.reasons.mkString("\n * ")
+        "\nReasons:\n * " + diff.reasons.map( r => indent(r, 3, firstLine = false)).mkString("\n * ")
       }
 
       diff match {
-        case _ : BasicDiff[T] => s"$formattedArguments$reasonsString"
-        case nestedDiff : NestedDiff[T] => s"$formattedArguments\n" +
-            s"Got     : ${nestedDiff.pathValueA}\n" +
-            s"Expected: ${nestedDiff.pathValueB}$reasonsString"
+        case _ : BasicDiff[T] =>
+          s"$formattedArguments$reasonsString"
+
+        case nestedDiff : NestedDiff[T] =>
+          val indentLevel = 10 + nestedDiff.path.length + 3
+
+          s"""$formattedArguments
+             |Got     : ${indent(nestedDiff.pathValueA,indentLevel,firstLine = false)}
+             |Expected: ${indent(nestedDiff.pathValueB,indentLevel,firstLine = false)}$reasonsString""".stripMargin
       }
     }
   }
@@ -88,9 +97,9 @@ object Formatter extends UnorderedMapFormatter {
     string.split('\n').map(_.length).max
   }
 
-  def indent(str: String, space: Int) : String = {
+  def indent(str: String, space: Int, firstLine: Boolean = true) : String = {
     val spaces = " " * space
-    str.split('\n').map( s => spaces + s ).mkString("\n")
+    (if( firstLine ) spaces else "") + str.split('\n').mkString("\n" + spaces)
   }
 }
 
@@ -98,6 +107,7 @@ trait UnorderedMapFormatter extends FormatterLowImplicits {
 
   import Formatter.formatI
 
+  // ambiguous with orderedMapFormatter
   implicit def mapFormatter[K : Formatter,V : Formatter] : Formatter[Map[K,V]] = new Formatter[Map[K, V]] {
     override def format(t: Map[K, V]): String = {
       val tupleFormatter : Formatter[(K,V)] = Formatter[(K,V)]( kv => formatI(kv._1) + " -> " + formatI(kv._2))
@@ -108,17 +118,36 @@ trait UnorderedMapFormatter extends FormatterLowImplicits {
 
 trait FormatterLowImplicits {
 
+  import Formatter.indent
+
   /** print 'null' if the value is null */
   implicit def anyFormatter[T] : Formatter[T] = Formatter[T]{ _.toString }
 
-  implicit def traversableFormatter[T](implicit formatter: Formatter[T]) : Formatter[Traversable[T]] = new Formatter[Traversable[T]] {
-    def format(t: Traversable[T]): String = {
+  def traversableContentFormatter[T : Formatter] : Formatter[Traversable[T]] = new TraversableFormatter[T](printCollectionName = false)
+
+  // ambiguous with mapFormatter
+  implicit def traversableFormatter[T : Formatter] : Formatter[Traversable[T]] = new TraversableFormatter[T](printCollectionName = true)
+
+  class TraversableFormatter[T](printCollectionName: Boolean)(implicit formatter: Formatter[T]) extends Formatter[Traversable[T]] {
+    override def format(t: Traversable[T]): String = {
       val formattedElements = t.map(elem => formatter.format(elem))
-      val draft = t.stringPrefix + "(" + formattedElements.mkString(", ") + ")"
+      val formattedElementsString = formattedElements.mkString(", ")
+      val draft = if( printCollectionName ) {
+        s"${t.stringPrefix}($formattedElementsString)"
+      } else {
+        formattedElementsString
+      }
+
       if( Formatter.width(draft) < 100 ) {
         draft
       } else {
-        val oneElementPerLine = t.stringPrefix + "(\n  " + formattedElements.mkString(",\n  ") + ")"
+        // multiline display
+        val formattedElementsString = formattedElements.mkString(",\n")
+        val oneElementPerLine = if( printCollectionName ) {
+          t.stringPrefix + "(\n" + indent(formattedElementsString, 2) + ")"
+        } else {
+          formattedElementsString
+        }
         oneElementPerLine
       }
     }

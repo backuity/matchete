@@ -68,7 +68,8 @@ trait TraversableMatchers extends CoreMatcherSupport {
   }
 
   /** order does not matter and elements might be duplicated */
-  def containElements[T](others: T*)(implicit formatter: Formatter[T]) = new EagerMatcher[TraversableOnce[T]] {
+  def containElements[T](others: T*)(implicit elemFormatter: Formatter[T]) = new EagerMatcher[TraversableOnce[T]] {
+    private val formatter = Formatter.traversableContentFormatter[T]
     def description = "contain the same elements as " + others
 
     protected def eagerCheck(once: TraversableOnce[T]) {
@@ -77,8 +78,8 @@ trait TraversableMatchers extends CoreMatcherSupport {
       val missingElements: Seq[T] = others.toSeq.diff(elems.toSeq)
       val extraElements : Seq[T] = elems.toSeq.diff(others.toSeq)
 
-      val missingMsg : String = if( missingElements.isEmpty ) "" else s"does not contain ${formatter.formatAll(missingElements)}"
-      val extraMsg : String = if( extraElements.isEmpty ) "" else s"contains unexpected elements ${formatter.formatAll(extraElements)}"
+      val missingMsg : String = if( missingElements.isEmpty ) "" else s"does not contain ${formatter.format(missingElements)}"
+      val extraMsg : String = if( extraElements.isEmpty ) "" else s"contains unexpected elements ${formatter.format(extraElements)}"
       val article : String = if( missingElements.isEmpty || extraElements.isEmpty ) "" else " but "
 
       failIf( !missingElements.isEmpty || !extraElements.isEmpty, s"$elems $missingMsg$article$extraMsg")

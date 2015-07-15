@@ -35,12 +35,14 @@ object Diffable {
 
     def valueA : Any
     def valueB : Any
+    def formattedValueA : String
+    def formattedValueB : String
 
     /** @return a readable string containing the path of the source of the diff along with the value of the first element */
-    def pathValueA : String = formatPathWithValue(valueA)
+    def pathValueA : String = formatPathWithValue(formattedValueA)
 
     /** @return a readable string containing the path of the source of the diff along with the value of the second element */
-    def pathValueB : String = formatPathWithValue(valueB)
+    def pathValueB : String = formatPathWithValue(formattedValueB)
 
     def path : String = path0("")
 
@@ -48,18 +50,22 @@ object Diffable {
 
     def reasons: List[String]
 
-    private def formatPathWithValue(value: Any) : String = {
-      if( path.isEmpty ) value.toString else path + " = " + value
+    private def formatPathWithValue(value: String) : String = {
+      if( path.isEmpty ) value else path + " = " + value
     }
   }
-  case class BasicDiff[+T](sourceA: T, sourceB: T, reasons : List[String] = Nil) extends SomeDiff[T] {
+  case class BasicDiff[+T](sourceA: T, sourceB: T, reasons : List[String] = Nil)(implicit formatter: Formatter[T]) extends SomeDiff[T] {
     def valueA = sourceA
     def valueB = sourceB
+    def formattedValueA = formatter.format(sourceA)
+    def formattedValueB = formatter.format(sourceB)
     private[Diffable] def path0(prefix: String) : String = prefix
   }
   case class NestedDiff[+T](sourceA: T, sourceB: T, origin: String, detail: SomeDiff[Any]) extends SomeDiff[T] {
     def valueA = detail.valueA
     def valueB = detail.valueB
+    def formattedValueA = detail.formattedValueA
+    def formattedValueB = detail.formattedValueB
     private[Diffable] def path0(prefix: String) : String = {
       val newPrefix = if( prefix.isEmpty ) origin else {
         prefix + {if( origin.isEmpty ) "" else { "." + origin }}
@@ -188,7 +194,7 @@ object Diffable {
     import c.universe._
     val elementType = tag.tpe.typeArgs.head
     q"""
-        val formatter = implicitly[Formatter[$elementType]]
+        val formatter = Formatter.traversableContentFormatter[$elementType]
         val missingElements = b -- a
         val extraElements = a -- b
 
@@ -208,11 +214,11 @@ object Diffable {
         } else {
           var reasons : _root_.scala.collection.immutable.List[_root_.java.lang.String] = _root_.scala.collection.immutable.Nil
           if( missingElements.nonEmpty ) {
-            reasons = ("missing elements: " + formatter.formatAll(missingElements)) :: reasons
+            reasons = ("missing elements: " + Formatter.indent(formatter.format(missingElements), 18, firstLine = false)) :: reasons
           }
 
           if( extraElements.nonEmpty ) {
-            reasons = ("extra elements: " + formatter.formatAll(extraElements)) :: reasons
+            reasons = ("extra elements: " + Formatter.indent(formatter.format(extraElements), 16, firstLine = false)) :: reasons
           }
 
           BasicDiff(a,b,reasons)

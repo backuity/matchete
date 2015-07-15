@@ -44,8 +44,8 @@ class SeqDiffable extends JunitMatchers {
             |
             |  Bucket(List(Bike(x,13,y), Bike(john X toto,21,BMX)))
             |
-            |Got     : stuffs.(1).name = john toto
-            |Expected: stuffs.(1).name = john X toto expected:<john [X ]toto> but was:<john []toto>""".stripMargin
+            |Got     : stuffs.(1).name = 'john toto'
+            |Expected: stuffs.(1).name = 'john X toto' expected:<john [X ]toto> but was:<john []toto>""".stripMargin
         c.getActual must_== "john toto"
         c.getExpected must_== "john X toto"
     }

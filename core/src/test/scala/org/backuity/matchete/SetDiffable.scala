@@ -26,7 +26,8 @@ class SetDiffable extends JunitMatchers {
         |Expected: <some-element>.age = 99""".stripMargin)
 
     {Set(Person("john", 12), Person("doe", 23), Person("xx", 45)) must_== Set(Person("doe", 99), Person("john", 12))} must throwAn[AssertionError].withMessage(
-      """Set(john(12), doe(23), xx(45)) is not equal to Set(doe(99), john(12)):
+      """Set(john(12), doe(23), xx(45)) is not equal to Set(doe(99), john(12))
+        |Reasons:
         | * extra elements: doe(23), xx(45)
         | * missing elements: doe(99)""".stripMargin)
 
