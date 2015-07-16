@@ -87,11 +87,18 @@ class FormatterTest extends JunitMatchers {
     )
   }
 
-  @Test @Ignore // TODO
+  // TODO if Formatter implicits gets implemented through macros or if scala changes specificity wrt contravariance
+  //      see the note in Formatter
+  @Test @Ignore
   def setFormatterShouldSortSetIfPossible(): Unit = {
     {
       Set(1,2,8,5,4,3) must_== Set(3,4,5,1,6,2,9)
-    }
+    } must throwAn[AssertionError].withMessage(
+      """Set(1, 2, 3, 4, 5, 8) is not equal to Set(1, 2, 3, 4, 5, 6, 9)
+        |Reasons:
+        | * extra elements: 8
+        | * missing elements: 9, 6""".stripMargin
+    )
   }
 
   @Test

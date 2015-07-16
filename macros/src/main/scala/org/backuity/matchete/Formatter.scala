@@ -40,6 +40,16 @@ object Formatter extends UnorderedMapFormatter {
     }
   }
 
+  // This cannot be implemented like that due to https://issues.scala-lang.org/browse/SI-2509
+  //
+  // To sum it up: scala ranks implicits by specificity which takes variance into account, a subtype wrt variance
+  //               being more specific than its supertype. So for contravariant types (such as Formatter) the specificity
+  //               decreases as you go deeper in the type hierarchy.
+  //               Unfortunately the 'LowPriorityImplicit' trick does not get us out of this situation as it only decreases
+  //               the specificity by one (so to speak), which makes your implicits ambiguous (same specificity).
+  //
+  // A fix would be to make Formatter invariant and implement them with implicit macros
+  //
 //  implicit def orderedSetFormatter[T : Formatter : Ordering] : Formatter[Set[T]] = new Formatter[Set[T]] {
 //    override def format(t: Set[T]): String = {
 //      traversableFormatter[T].format(SortedSet(t.toSeq : _*))
@@ -103,7 +113,7 @@ object Formatter extends UnorderedMapFormatter {
   }
 }
 
-trait UnorderedMapFormatter extends FormatterLowImplicits {
+trait UnorderedMapFormatter extends FormatterLowPriorityImplicits {
 
   import Formatter.formatI
 
@@ -116,7 +126,7 @@ trait UnorderedMapFormatter extends FormatterLowImplicits {
   }
 }
 
-trait FormatterLowImplicits {
+trait FormatterLowPriorityImplicits {
 
   import Formatter.indent
 
