@@ -1,3 +1,19 @@
+## 1.23 _(2015-07-16)_
+
+* Improved readability of failure messages
+
+## 1.22 _(2015-07-15)_
+
+* Improved readability of failure messages
+
+## 1.21 _(2015-07-13)_
+
+* Improved readability of failure messages
+
+## 1.20 _(2015-07-13)_
+
+* Removed useless trait `Formatters`
+
 ## 1.19 _(2015-07-13)_
 
 * Fix Diffable generation for polymorphic case classes (such as TupleN)
