@@ -14,15 +14,15 @@ Import Matchete in your project:
 
 * SBT
     ```
-    libraryDependencies += "org.backuity" %% "matchete" % "1.16" % "test"
+    libraryDependencies += "org.backuity" %% "matchete-junit" % "1.23" % "test"
     ```
     
 * Maven
     ```xml
     <dependency>
         <groupId>org.backuity</groupId>
-        <artifactId>matchete_2.11</artifactId>
-        <version>1.16</version>
+        <artifactId>matchete-junit_2.11</artifactId>
+        <version>1.23</version>
         <scope>test</scope>
     </dependency>
     ```
