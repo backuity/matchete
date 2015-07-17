@@ -40,7 +40,14 @@ trait CoreMatcherSupport extends FailureReporter with ToMatcherOps {
         try {
           pf(t)
         } catch {
-          case util.control.NonFatal(e) => fail(s"${formatter.format(t)} $descriptionNegation: ${e.getMessage}")
+          case util.control.NonFatal(e) =>
+            val msg = new StringBuilder(formatter.format(t))
+            msg.append(" ").append(descriptionNegation).append(":")
+            if( !e.getMessage.startsWith("\n")) {
+             msg.append(" ")
+            }
+            msg.append(e.getMessage)
+            fail(msg.toString)
         }
       } else fail(s"${formatter.format(t)} $descriptionNegation")
     }

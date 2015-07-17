@@ -76,6 +76,38 @@ class TraversableMatchersTest extends JunitMatchers {
   }
 
   @Test
+  def containShouldFormatLongLists(): Unit = {
+    {
+      List(
+        Person("this is a looooooooooooooooooooooooooooooooooooooooooooooooo00000000000000000000000000000000ng name", 1234567890),
+        Person("this is a looooooooooooooooooooooooooooooooooooooooooooooooo00000000000000000000000000000000ng name too", 1234567890)
+      ) must containExactly(a("person with name toto") {
+        case Person(name, age) => name must_== "toto"
+      })
+    } must throwAn[AssertionError].withMessage(
+      """List(
+        |  Person(this is a looooooooooooooooooooooooooooooooooooooooooooooooo00000000000000000000000000000000ng name,1234567890),
+        |  Person(this is a looooooooooooooooooooooooooooooooooooooooooooooooo00000000000000000000000000000000ng name too,1234567890))
+        |
+        |has size 2 but expected size 1 -- unexpected elements:
+        |
+        |- Person(this is a looooooooooooooooooooooooooooooooooooooooooooooooo00000000000000000000000000000000ng name,1234567890) is not a person with name toto:
+        |  'this is a looooooooooooooooooooooooooooooooooooooooooooooooo00000000000000000000000000000000ng name'
+        |
+        |is not equal to
+        |
+        |  'toto'
+        | expected:<t[oto]> but was:<t[his is a looooooooooooooooooooooooooooooooooooooooooooooooo00000000000000000000000000000000ng name]>
+        |- Person(this is a looooooooooooooooooooooooooooooooooooooooooooooooo00000000000000000000000000000000ng name too,1234567890) is not a person with name toto:
+        |  'this is a looooooooooooooooooooooooooooooooooooooooooooooooo00000000000000000000000000000000ng name too'
+        |
+        |is not equal to
+        |
+        |  'toto'
+        | expected:<t[ot]o> but was:<t[his is a looooooooooooooooooooooooooooooooooooooooooooooooo00000000000000000000000000000000ng name to]o>""".stripMargin)
+  }
+
+  @Test
   def containAny() {
     List(1,2,3) must containAny(be_<(5), be_>(100), be_>(200))
     Iterator(1,2,3) must containAny(be_<(5), be_>(100), be_>(200))
@@ -135,15 +167,15 @@ class TraversableMatchersTest extends JunitMatchers {
     // 1. not enough matchers
     // 1.a) all elements are matched
     {List(1,2) must containExactly(be_<(3))} must throwAn[AssertionError].withMessage(
-      "List(1, 2) has too many elements, expected 1, got 2")
+      "List(1, 2) has size 2 but expected size 1")
 
     // 1.b) no matchers
     {List(1,2) must containExactly[Int]()} must throwAn[AssertionError].withMessage(
-      "List(1, 2) has too many elements, expected 0, got 2")
+      "List(1, 2) has size 2 but expected size 0")
 
     // 1.c) some elements are unmatched
     {List(1,2,3) must containExactly(be_<(3))} must throwAn[AssertionError].withMessage(
-      "List(1, 2, 3) has too many elements, expected 1, got 3; has unexpected elements 3 is not < 3")
+      "List(1, 2, 3) has size 3 but expected size 1 -- unexpected elements 3 is not < 3")
 
     // 2. sizes match, but some elements are unmatched
     {List(Person("john", 28), Person("sophie", 12), Person("andrea", 17)) must containExactly(
@@ -166,11 +198,11 @@ class TraversableMatchersTest extends JunitMatchers {
 
     // 1.a) not enough elements
     {List(1) must containExactly(be_<(1), be_<(2), be_<(3), be_<(4))} must throwAn[AssertionError].withMessage(
-      "List(1) has too few elements, expected 4, got 1; does not contain be < 1 : 1 is not < 1")
+      "List(1) has size 1 but expected size 4 -- does not contain be < 1 : 1 is not < 1")
 
     // 1.b) no elements
     {List() must containExactly(be_<(3))} must throwAn[AssertionError].withMessage(
-      "List() has too few elements, expected 1, got 0; does not contain be < 3")
+      "List() has size 0 but expected size 1 -- does not contain be < 3")
 
 
     // 2. sizes match, but some matchers are unsatisfied

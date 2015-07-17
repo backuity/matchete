@@ -53,16 +53,17 @@ trait TraversableMatchers extends CoreMatcherSupport {
   def containAny[T](matchers: Matcher[T]*) = new EagerMatcher[TraversableOnce[T]] {
     def description = s"contain any of ${matchers.map(_.description).mkString(", ")}"
 
-    protected def eagerCheck(t: TraversableOnce[T]) {
+    protected def eagerCheck(once: TraversableOnce[T]) {
+      val elems = asTraversable(once)
       import Breaks._
       breakable {
         val errors = for( matcher <- matchers ) yield {
-          checkAnElementForAMatcher(matcher, t.toSeq) match {
+          checkAnElementForAMatcher(matcher, elems) match {
             case None => break()
             case Some(err) => err
           }
         }
-        failFor(s"$t does not contain any of", errors)
+        failFor(elems, "does not contain any of", errors)
       }
     }
   }
@@ -103,25 +104,27 @@ trait TraversableMatchers extends CoreMatcherSupport {
    *
    * It is the caller responsibility to not pass overlapping matchers.
    */
-  def containExactly[T](matchers: Matcher[T]*) = new EagerMatcher[TraversableOnce[T]] {
+  def containExactly[T](matchers: Matcher[T]*)(implicit formatter: Formatter[Traversable[T]]) = new EagerMatcher[TraversableOnce[T]] {
     def description = s"contain exactly (${matchers.map(_.description).mkString(", ")})"
 
     def eagerCheck(once: TraversableOnce[T]) {
       val elems = asTraversable(once)
-      val tooFewTooMany = if( elems.size < matchers.size ) Some("too few") else if( elems.size > matchers.size ) Some("too many") else None
-      val sizeErrorMessage = tooFewTooMany.map( " has " + _ + s" elements, expected ${matchers.size}, got ${elems.size}")
-      def failPrefix = sizeErrorMessage.map( _ + ";" ).getOrElse("")
+      val tooFewTooMany = if( elems.size != matchers.size ) Some("too few") else if( elems.size > matchers.size ) Some("too many") else None
+      val sizeErrorMessage: Option[String] = if( elems.size == matchers.size ) None else {
+        Some(s"has size ${elems.size} but expected size ${matchers.size}")
+      }
+      val failPrefix = sizeErrorMessage.map( _ + " -- " ).getOrElse("")
 
       checkAMatcherForEveryElement(elems, failPrefix)
       checkAnElementForEveryMatcher(matchers, elems, failPrefix)
 
       for( sizeError <- sizeErrorMessage ) {
-        fail( elems + sizeError )
+        failFor(elems, sizeError, Nil)
       }
     }
 
 
-    def checkAMatcherForEveryElement(elems: Traversable[T], failPrefix : String) {
+    def checkAMatcherForEveryElement(elems: Traversable[T], failPrefix : String)(implicit formatter: Formatter[Traversable[T]]) {
 
       // stop at the first successful matcher and return Nil
       // return the error messages otherwise
@@ -153,7 +156,8 @@ trait TraversableMatchers extends CoreMatcherSupport {
         }
       }).flatten
 
-      failFor(elems + failPrefix + " has unexpected elements", failingElems)
+      val reason = (if (failPrefix.isEmpty) "has " else failPrefix) + "unexpected elements"
+      failIfNeededFor(elems, reason, failingElems)
     }
   }
 
@@ -195,18 +199,41 @@ trait TraversableMatchers extends CoreMatcherSupport {
   private def checkAnElementForEveryMatcher[T](matchers: Seq[Matcher[T]], elems: Traversable[T], failPrefix : String = "")(implicit formatter: Formatter[Traversable[T]]) {
     val failingMatchers = (for( matcher <- matchers ) yield checkAnElementForAMatcher(matcher, elems.toSeq)).flatten
 
-    failFor(formatter.format(elems) + failPrefix + " does not contain", failingMatchers)
+    failIfNeededFor(elems, failPrefix + "does not contain", failingMatchers)
   }
 
-  private def failFor(what: String, failingElems: Traversable[ContainError]) {
-    if( !failingElems.isEmpty ) {
-      fail(what +
-        (if( failingElems.size == 1 ) {
-          " " + failingElems.mkString
-        } else {
-          ":\n- " + failingElems.mkString("\n- ")
-        }))
+  private def failIfNeededFor[T](elements: Traversable[T], reasons: String, failingElems: Traversable[ContainError])(implicit formatter: Formatter[Traversable[T]]): Unit = {
+    if( failingElems.nonEmpty ) {
+      failFor(elements,reasons,failingElems)
     }
+  }
+
+  private def failFor[T](elements: Traversable[T], reasons: String, failingElems: Traversable[ContainError])(implicit formatter: Formatter[Traversable[T]]) {
+    val what = formatter.format(elements)
+    val msg = new StringBuilder(what)
+
+    val longElementList = Formatter.width(what) > 80
+
+    if( longElementList ) {
+      msg.append("\n\n").append(reasons)
+    } else {
+      msg.append(" ").append(reasons)
+    }
+
+    if( failingElems.nonEmpty ) {
+      if( longElementList ) {
+        msg.append(":\n")
+      } else {
+        if( failingElems.size > 1 ) msg.append(":") else msg.append(" ")
+      }
+
+      if( failingElems.size > 1 ) {
+        msg.append("\n- ")
+      }
+      msg.append(failingElems.mkString("\n- "))
+    }
+
+    fail(msg.toString)
   }
 
   private def asTraversable[T](once : TraversableOnce[T]) : Traversable[T] = {
