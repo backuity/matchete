@@ -128,32 +128,6 @@ class TraversableMatchersTest extends JunitMatchers {
   }
 
   @Test
-  def testContainElements() {
-    List(1,2) must containElements(1,2)
-    Iterator(1,2,3) must containElements(1,2,3)
-    List(2,1) must containElements(1,2)
-    List(2,2,2,3) must containElements(3,2,2,2)
-    Set("a","b","c") must containElements("b","a","c")
-    List.empty[Int] must containElements()
-    Set(Person("john", 15), Person("mary", 92)) must containElements(Person("john",15), Person("mary", 92))
-
-    {List(1) must containElements(1,4,5)} must throwAn[AssertionError].withMessage(
-      "List(1) does not contain 4, 5")
-
-    {List(1,2,3,4) must containElements(2,4)} must throwAn[AssertionError].withMessage(
-      "List(1, 2, 3, 4) contains unexpected elements 1, 3")
-
-    {List(1,2,3) must containElements(1,4)} must throwAn[AssertionError].withMessage(
-      "List(1, 2, 3) does not contain 4 but contains unexpected elements 2, 3")
-
-    {List("a","b","c") must containElements("c","d","e")} must throwAn[AssertionError].withMessage(
-      "List(a, b, c) does not contain 'd', 'e' but contains unexpected elements 'a', 'b'")
-
-    {List(2,2,2,3) must containElements(2,3,4)} must throwAn[AssertionError].withMessage(
-      "List(2, 2, 2, 3) does not contain 4 but contains unexpected elements 2, 2")
-  }
-
-  @Test
   def containExactly() {
     List(1,2) must containExactly(be_<(2), be_<(3))
     Iterator(1,2,3) must containExactly(be_<(10), be_<(20), be_<(30))
