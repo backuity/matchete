@@ -3,7 +3,7 @@ package org.backuity.matchete
 import org.backuity.matchete.TestUtil._
 import org.junit.{ComparisonFailure, Test}
 
-class SeqDiffable extends JunitMatchers {
+class SeqDiffableTest extends JunitMatchers {
 
   @Test
   def beEqualNestedList_Ok(): Unit = {

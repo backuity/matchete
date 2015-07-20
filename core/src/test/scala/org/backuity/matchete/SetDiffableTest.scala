@@ -2,7 +2,7 @@ package org.backuity.matchete
 
 import org.junit.Test
 
-class SetDiffable extends JunitMatchers {
+class SetDiffableTest extends JunitMatchers {
   import TestUtil._
 
   @Test
