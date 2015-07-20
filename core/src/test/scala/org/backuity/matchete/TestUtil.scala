@@ -3,6 +3,9 @@ package org.backuity.matchete
 object TestUtil {
 
   case class Person(name: String, age: Int)
+  case class Group(persons: List[Person]) {
+    def isEmpty = persons.isEmpty
+  }
 
   trait Stuff {
     def name: String

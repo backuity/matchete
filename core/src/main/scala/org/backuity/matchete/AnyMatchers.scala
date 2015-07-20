@@ -85,6 +85,10 @@ trait AnyMatchers extends CoreMatcherSupport {
     case t if t.isEmpty =>
   }
 
+  def anEmpty[T : Manifest](implicit ev1: T => {def isEmpty: Boolean}, formatter: Formatter[T]): Matcher[T] = an("empty " + manifest[T].runtimeClass.getSimpleName) {
+    case t if t.isEmpty =>
+  }
+
   def beEq[T <: AnyRef](expected: T)(implicit formatter: Formatter[T]) = new EagerMatcher[T] {
     def description: String = "be eq " + expected
 

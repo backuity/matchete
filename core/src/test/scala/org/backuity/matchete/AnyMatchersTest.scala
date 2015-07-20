@@ -89,6 +89,14 @@ class AnyMatchersTest extends JunitMatchers {
   }
 
   @Test
+  def anEmpty(): Unit = {
+    List(Group(Nil)) must containExactly(anEmpty[Group])
+
+    {List() must containExactly(anEmpty[Group])} must throwAn[AssertionError].withMessage(
+      "List() has size 0 but expected size 1 -- does not contain an empty Group")
+  }
+
+  @Test
   def haveSize() {
     "" must haveSize(0)
     "sophie" must haveSize(6)
