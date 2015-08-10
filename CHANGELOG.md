@@ -1,3 +1,12 @@
+## 1.25 _(2015-08-10)_
+
+* Make sure `Diffable.forFields[T]` is consistent with `T.equals` 
+
+## 1.24 _(2015-08-10)_
+
+* `containElements` has been dropped in favor of traversable diffables
+* Improved formatting of traversable matchers
+
 ## 1.23 _(2015-07-16)_
 
 * Improved readability of failure messages
