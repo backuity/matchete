@@ -7,8 +7,17 @@ class SeqDiffableTest extends JunitMatchers {
 
   @Test
   def beEqualNestedList_Ok(): Unit = {
-    implicit val stuffDiffable : Diffable[Stuff] = Diffable.forFields(_.name)
-    Bucket(List(Flower("john", 12))) must_== Bucket(List(Bike("john", 21, "BMX")))
+    {List(Person("John", 21), Person("Jane", 32)) must_== List(Person("John", 21), Person("Jane", 12))} must throwAn[AssertionError].withMessage(
+      """List(Person(John,21), Person(Jane,32)) is not equal to List(Person(John,21), Person(Jane,12))
+        |Got     : (1).age = 32
+        |Expected: (1).age = 12""".stripMargin)
+
+    implicit val diffableNACC : Diffable[CustomEqual] = Diffable.forFields[CustomEqual](_.str, _.int)
+
+    {List(new CustomEqual("one", 1),new CustomEqual("two", 2)) must_== List(new CustomEqual("one", 2), new CustomEqual("two", 2))} must throwAn[AssertionError].withMessage(
+    """List(CE(one,1), CE(two,2)) is not equal to List(CE(one,2), CE(two,2))
+      |Got     : (0).int = 1
+      |Expected: (0).int = 2""".stripMargin)
   }
 
   @Test
@@ -32,17 +41,17 @@ class SeqDiffableTest extends JunitMatchers {
 
   @Test
   def beEqualNestedList_ShouldThrowComparisonFailureForStringFields(): Unit = {
-    implicit val stuffDiffable : Diffable[Stuff] = Diffable.forFields(_.name)
+    implicit val stuffDiffable : Diffable[Stuff] = Diffable.forFields(_.name, _.price)
 
-    {Bucket(List(Flower("x",12),Flower("john toto", 12))) must_== Bucket(List(Bike("x",13,"y"),Bike("john X toto", 21, "BMX")))} must throwA[ComparisonFailure].suchAs {
+    {Bucket(List(Flower("x",13),Flower("john toto", 12))) must_== Bucket(List(Flower("x",13),Flower("john X toto", 21)))} must throwA[ComparisonFailure].suchAs {
       case c : ComparisonFailure =>
         c.getMessage must_==
           """
-            |  Bucket(List(Flower(x,12), Flower(john toto,12)))
+            |  Bucket(List(Flower(x,13), Flower(john toto,12)))
             |
             |is not equal to
             |
-            |  Bucket(List(Bike(x,13,y), Bike(john X toto,21,BMX)))
+            |  Bucket(List(Flower(x,13), Flower(john X toto,21)))
             |
             |Got     : stuffs.(1).name = 'john toto'
             |Expected: stuffs.(1).name = 'john X toto' expected:<john [X ]toto> but was:<john []toto>""".stripMargin
@@ -55,11 +64,6 @@ class SeqDiffableTest extends JunitMatchers {
   def beEqual_Seq() {
     List(1,2,3) must_== List(1,2,3)
     Seq(1,2,3) must_== List(1,2,3)
-
-    {List(Person("John", 21), Person("Jane", 32)) must_== List(Person("John", 21), Person("Jane", 12))} must throwAn[AssertionError].withMessage(
-      """List(Person(John,21), Person(Jane,32)) is not equal to List(Person(John,21), Person(Jane,12))
-        |Got     : (1).age = 32
-        |Expected: (1).age = 12""".stripMargin)
 
     {Seq(1,2,3) must_== List(1,3,2)} must throwAn[AssertionError].withMessage(
       """List(1, 2, 3) is not equal to List(1, 3, 2)

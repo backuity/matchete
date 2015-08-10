@@ -77,6 +77,17 @@ object Diffable {
 
   implicit def materializeDiffable[T] : Diffable[T] = macro materializeDiffImpl[T]
 
+  /**
+   * Generate a [[Diffable]] based on a list of fields for a type `T`:
+   * {{{
+   *   class Person(val name: String, val age: String)
+   *   val personDiffable : Diffable[Person] = Diffable.forFields(_.name, _.age)
+   * }}}
+   * 
+   * @note the resulting Diffable is consistent with the type `T` equals, that is, for
+   *       all `t1` and `t2` of type `T`, and all diffable `d` produced with `Diffable.forFields`,
+   *       iff `t1 == t2` then `d.diff(t1,t2) == Equal` and iff `t1 != t2` then `d.diff(t1,t2) != Equal`.
+   */
   def forFields[T]( fields : (T => Any)*) : Diffable[T] = macro diffableForFields[T]
 
   def diffableForFields[T : c.WeakTypeTag](c : blackbox.Context)(fields: c.Tree*) : c.Tree = {
@@ -111,11 +122,15 @@ object Diffable {
     q"""
         new _root_.org.backuity.matchete.Diffable[$tpe] {
           import _root_.org.backuity.matchete.Diffable
-          import Diffable.{DiffResult,Equal,NestedDiff,SomeDiff}
+          import Diffable.{DiffResult,Equal,NestedDiff,SomeDiff,BasicDiff}
 
           def diff(a : $tpe, b : $tpe) : DiffResult[$tpe] = {
-            ..$checkFields
-            Equal
+            if( a == b ) {
+               Equal
+            } else {
+              ..$checkFields
+              BasicDiff(a, b)
+            }
           }
         }
      """
