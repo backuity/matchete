@@ -14,7 +14,7 @@ Matchete is a collection of (test) matchers. It is simple, type-safe, concise bu
 - [Nice error messages](#nice-error-messages)
 - [Easy to extend](#easy-to-extend)
   - [Create your own matchers](#create-your-own-matchers)
-  - [Throw different errors](#throw-different-errors)
+  - [Throw different exceptions](#throw-different-exceptions)
   - [Wrap it up : organize your test code with traits](#wrap-it-up--organize-your-test-code-with-traits)
 - [Why Matchete?](#why-matchete)
   
