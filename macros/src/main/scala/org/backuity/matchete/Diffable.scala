@@ -213,6 +213,7 @@ object Diffable {
 
   def materializeSetDiffable[T: c.WeakTypeTag](c: blackbox.Context)(tag: c.WeakTypeTag[T]): c.Tree = {
     import c.universe._
+    "aha".diff("haha")
     val elementType = tag.tpe.typeArgs.head
     q"""
         val formatter = Formatter.traversableContentFormatter[$elementType]
@@ -226,10 +227,17 @@ object Diffable {
         } else if( missingElements.size == 1 && extraElements.size == 1 ) {
 
           // special case, we'll diff that one element
-          implicitly[Diffable[$elementType]].diff(extraElements.head, missingElements.head) match {
+          val extra = extraElements.head
+          val missing = missingElements.head
+          implicitly[Diffable[$elementType]].diff(extra, missing) match {
             case Equal => BasicDiff(a,b) // heck they are different!
 
-            case someDiff : SomeDiff[Any] => NestedDiff(a,b,"<some-element>",someDiff)
+            case someDiff : SomeDiff[Any] =>
+              val stringDiff = org.backuity.matchete.StringUtil.diff(extra.toString, missing.toString)
+              val label = if (stringDiff.distinct == ".") {
+                "<some-element>"
+              } else stringDiff
+              NestedDiff(a,b,label,someDiff)
           }
 
         } else {
