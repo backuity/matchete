@@ -20,7 +20,7 @@ trait AgeMatchers extends MatcherSupport {
 
   import CustomMatchersTest.Person
 
-  def beAnAdult : Matcher[Int] = beLike("an adult") { case age => age must be_>=(18) }
+  def beAnAdult: Matcher[Int] = beLike("an adult") { case age => age must be_>=(18) }
 
   // type inference variation
   def beAnAdult2 = beLike[Int]("an adult") { case age => age must be_>=(18) }

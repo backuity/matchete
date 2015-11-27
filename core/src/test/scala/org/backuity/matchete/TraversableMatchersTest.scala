@@ -25,34 +25,42 @@ class TraversableMatchersTest extends JunitMatchers {
 
   @Test
   def forAll() {
-    List(1,2,3,4) must forAll(be_<(10))
-    Iterator(1,2,3) must forAll(be_<(10))
-    List(2,4,6,8) must forAll(be_<(10) and beLike("an even number") { case n if n % 2 == 0 => })
-    Set(2,4,6,8) must forAll(be_<(10) and beLike("an even number") { case n if n % 2 == 0 => })
+    List(1, 2, 3, 4) must forAll(be_<(10))
+    Iterator(1, 2, 3) must forAll(be_<(10))
+    List(2, 4, 6, 8) must forAll(be_<(10) and beLike("an even number") { case n if n % 2 == 0 => })
+    Set(2, 4, 6, 8) must forAll(be_<(10) and beLike("an even number") { case n if n % 2 == 0 => })
 
     List() must forAll(be_<(10))
 
-    {List(1,2,30,40) must forAll(be_<(10))} must throwAn[AssertionError].withMessage(
+    {
+      List(1, 2, 30, 40) must forAll(be_<(10))
+    } must throwAn[AssertionError].withMessage(
       "List(1, 2, 30, 40) is not valid: 30 is not < 10")
 
-    {List(1,2,3,4) must forAll(beLike("< 3") { case i => require( i < 3, s"$i is not < 3") })} must throwAn[AssertionError].withMessage(
+    {
+      List(1, 2, 3, 4) must forAll(beLike("< 3") { case i => require(i < 3, s"$i is not < 3") })
+    } must throwAn[AssertionError].withMessage(
       "List(1, 2, 3, 4) is not valid: 3 is not like < 3: requirement failed: 3 is not < 3")
   }
 
   @Test
   def contain() {
-    List(1,2,3) must contain(be_<(2))
-    List(1,2,3) must contain(be_<(3))
-    Iterator(1,2,3) must contain(be_<(3))
-    List(1,2,3) must contain(be_<(2), be_<(2))
+    List(1, 2, 3) must contain(be_<(2))
+    List(1, 2, 3) must contain(be_<(3))
+    Iterator(1, 2, 3) must contain(be_<(3))
+    List(1, 2, 3) must contain(be_<(2), be_<(2))
 
-    {List() must contain(be_<(2))} must throwAn[AssertionError].withMessage(
+    {
+      List() must contain(be_<(2))
+    } must throwAn[AssertionError].withMessage(
       "List() does not contain be < 2")
 
-    {List(Person("john", 15), Person("josephine", 12), Person("joseph", 7)) must contain(
-      an("adult"){ case Person(_,age) => age must be_>=(18)},
-      an("'m' starting name"){ case Person(name,_) => name must startWith("m")},
-      a("'jo' starting name"){ case Person(name,_) => name must startWith("jo")})} must throwAn[AssertionError].withMessage(
+    {
+      List(Person("john", 15), Person("josephine", 12), Person("joseph", 7)) must contain(
+        an("adult") { case Person(_, age) => age must be_>=(18) },
+        an("'m' starting name") { case Person(name, _) => name must startWith("m") },
+        a("'jo' starting name") { case Person(name, _) => name must startWith("jo") })
+    } must throwAn[AssertionError].withMessage(
       """List(Person(john,15), Person(josephine,12), Person(joseph,7)) does not contain:
         |- an adult :
         |  * Person(john,15) is not an adult: 15 is not >= 18
@@ -66,12 +74,16 @@ class TraversableMatchersTest extends JunitMatchers {
     List() must not(contain(be_<(5), be_>(10)))
     List(8) must not(contain(be_<(5), be_>(10)))
 
-    {List(1,2,3) must not(contain(an("even number") {
-      case n => n % 2 must beEqualTo(1)
-    }))} must throwAn[AssertionError].withMessage(
+    {
+      List(1, 2, 3) must not(contain(an("even number") {
+        case n => n % 2 must beEqualTo(1)
+      }))
+    } must throwAn[AssertionError].withMessage(
       "List(1, 2, 3) should not contain an even number")
 
-    {List(2,3) must not(contain(be_<(5)))} must throwAn[AssertionError].withMessage(
+    {
+      List(2, 3) must not(contain(be_<(5)))
+    } must throwAn[AssertionError].withMessage(
       "List(2, 3) should not contain be < 5")
   }
 
@@ -109,13 +121,15 @@ class TraversableMatchersTest extends JunitMatchers {
 
   @Test
   def containAny() {
-    List(1,2,3) must containAny(be_<(5), be_>(100), be_>(200))
-    Iterator(1,2,3) must containAny(be_<(5), be_>(100), be_>(200))
-    List(1,2,3) must containAny(be_>(100), be_>(200), be_<(5))
+    List(1, 2, 3) must containAny(be_<(5), be_>(100), be_>(200))
+    Iterator(1, 2, 3) must containAny(be_<(5), be_>(100), be_>(200))
+    List(1, 2, 3) must containAny(be_>(100), be_>(200), be_<(5))
     List(1) must containAny(be_>(5), be_==(1))
-    List(1,2,3) must containAny(be_==(2))
+    List(1, 2, 3) must containAny(be_==(2))
 
-    {List(1,2,3) must containAny(be_>(10), be_>(20))} must throwAn[AssertionError].withMessage(
+    {
+      List(1, 2, 3) must containAny(be_>(10), be_>(20))
+    } must throwAn[AssertionError].withMessage(
       """List(1, 2, 3) does not contain any of:
         |- be > 10 :
         |  * 1 is not > 10
@@ -129,10 +143,10 @@ class TraversableMatchersTest extends JunitMatchers {
 
   @Test
   def containExactly() {
-    List(1,2) must containExactly(be_<(2), be_<(3))
-    Iterator(1,2,3) must containExactly(be_<(10), be_<(20), be_<(30))
-    Set(1,2) must containExactly(be_<(2), be_<(3))
-    Set(1,2) must containExactly(be_==(1), be_==(2))
+    List(1, 2) must containExactly(be_<(2), be_<(3))
+    Iterator(1, 2, 3) must containExactly(be_<(10), be_<(20), be_<(30))
+    Set(1, 2) must containExactly(be_<(2), be_<(3))
+    Set(1, 2) must containExactly(be_==(1), be_==(2))
   }
 
   @Test
@@ -140,22 +154,30 @@ class TraversableMatchersTest extends JunitMatchers {
 
     // 1. not enough matchers
     // 1.a) all elements are matched
-    {List(1,2) must containExactly(be_<(3))} must throwAn[AssertionError].withMessage(
+    {
+      List(1, 2) must containExactly(be_<(3))
+    } must throwAn[AssertionError].withMessage(
       "List(1, 2) has size 2 but expected size 1")
 
     // 1.b) no matchers
-    {List(1,2) must containExactly[Int]()} must throwAn[AssertionError].withMessage(
+    {
+      List(1, 2) must containExactly[Int]()
+    } must throwAn[AssertionError].withMessage(
       "List(1, 2) has size 2 but expected size 0")
 
     // 1.c) some elements are unmatched
-    {List(1,2,3) must containExactly(be_<(3))} must throwAn[AssertionError].withMessage(
+    {
+      List(1, 2, 3) must containExactly(be_<(3))
+    } must throwAn[AssertionError].withMessage(
       "List(1, 2, 3) has size 3 but expected size 1 -- unexpected elements 3 is not < 3")
 
     // 2. sizes match, but some elements are unmatched
-    {List(Person("john", 28), Person("sophie", 12), Person("andrea", 17)) must containExactly(
-      an("adult"){ case Person(_,age) => age must be_>=(18)},
-      a("4 letter name"){ case Person(name,_) => name must haveSize(4)},
-      a("'jo' starting name"){ case Person(name,_) => name must startWith("jo")})} must throwAn[AssertionError].withMessage(
+    {
+      List(Person("john", 28), Person("sophie", 12), Person("andrea", 17)) must containExactly(
+        an("adult") { case Person(_, age) => age must be_>=(18) },
+        a("4 letter name") { case Person(name, _) => name must haveSize(4) },
+        a("'jo' starting name") { case Person(name, _) => name must startWith("jo") })
+    } must throwAn[AssertionError].withMessage(
       """List(Person(john,28), Person(sophie,12), Person(andrea,17)) has unexpected elements:
         |- Person(sophie,12) :
         |  * is not an adult: 12 is not >= 18
@@ -171,19 +193,25 @@ class TraversableMatchersTest extends JunitMatchers {
   def containExactly_UnsatisfiedMatchers() {
 
     // 1.a) not enough elements
-    {List(1) must containExactly(be_<(1), be_<(2), be_<(3), be_<(4))} must throwAn[AssertionError].withMessage(
+    {
+      List(1) must containExactly(be_<(1), be_<(2), be_<(3), be_<(4))
+    } must throwAn[AssertionError].withMessage(
       "List(1) has size 1 but expected size 4 -- does not contain be < 1 : 1 is not < 1")
 
     // 1.b) no elements
-    {List() must containExactly(be_<(3))} must throwAn[AssertionError].withMessage(
+    {
+      List() must containExactly(be_<(3))
+    } must throwAn[AssertionError].withMessage(
       "List() has size 0 but expected size 1 -- does not contain be < 3")
 
 
     // 2. sizes match, but some matchers are unsatisfied
-    {List(Person("john", 15), Person("josephine", 12), Person("joseph", 7)) must containExactly(
-      an("adult"){ case Person(_,age) => age must be_>=(18)},
-      an("'m' starting name"){ case Person(name,_) => name must startWith("m")},
-      a("'jo' starting name"){ case Person(name,_) => name must startWith("jo")})} must throwAn[AssertionError].withMessage(
+    {
+      List(Person("john", 15), Person("josephine", 12), Person("joseph", 7)) must containExactly(
+        an("adult") { case Person(_, age) => age must be_>=(18) },
+        an("'m' starting name") { case Person(name, _) => name must startWith("m") },
+        a("'jo' starting name") { case Person(name, _) => name must startWith("jo") })
+    } must throwAn[AssertionError].withMessage(
       """List(Person(john,15), Person(josephine,12), Person(joseph,7)) does not contain:
         |- an adult :
         |  * Person(john,15) is not an adult: 15 is not >= 18
@@ -197,15 +225,15 @@ class TraversableMatchersTest extends JunitMatchers {
 
   @Test
   def containExactly_InAnyOrder() {
-    List(1,2) must containExactly(be_<(3), be_<(2))
-    Set(1,2) must containExactly(be_<(3), be_<(2))
+    List(1, 2) must containExactly(be_<(3), be_<(2))
+    Set(1, 2) must containExactly(be_<(3), be_<(2))
 
     // both elements satisfy both matchers
     List(Person("john", 15), Person("josephine", 12)) must containExactly(
-      beLike("a kid"){ case Person(_,age) => age must be_<(18)},
-      beLike("a 'jo' starting name"){ case Person(name,_) => name must startWith("jo")})
+      beLike("a kid") { case Person(_, age) => age must be_<(18) },
+      beLike("a 'jo' starting name") { case Person(name, _) => name must startWith("jo") })
 
     // example from scaladoc
-    List(1,2,4) must containExactly(be_<=(2), be_>(3), be_>=(4))
+    List(1, 2, 4) must containExactly(be_<=(2), be_>(3), be_>=(4))
   }
 }

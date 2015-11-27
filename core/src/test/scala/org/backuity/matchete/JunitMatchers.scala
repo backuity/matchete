@@ -6,7 +6,7 @@ import org.junit.ComparisonFailure
 
 trait JunitFailureReporter extends AssertionFailureReporter {
   override def failIfDifferentStrings(actual: String, expected: String, msg: String) {
-    if( actual != expected ) throw new ComparisonFailure(msg, expected, actual)
+    if (actual != expected) throw new ComparisonFailure(msg, expected, actual)
   }
 }
 

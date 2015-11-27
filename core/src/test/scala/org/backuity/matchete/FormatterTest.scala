@@ -9,14 +9,20 @@ class FormatterTest extends JunitMatchers {
   @Test
   def customFormatter() {
 
-    implicit val customPersonFormatter = Formatter[Person]{ _.name }
+    implicit val customPersonFormatter = Formatter[Person] {
+      _.name
+    }
 
-    {Person("john", 12) must_== Person("mary", 24)} must throwAn[AssertionError].withMessage(
+    {
+      Person("john", 12) must_== Person("mary", 24)
+    } must throwAn[AssertionError].withMessage(
       """john is not equal to mary
         |Got     : age = 12
         |Expected: age = 24""".stripMargin)
 
-    {List(Person("john", 12)) must_== List(Person("mary", 24))} must throwAn[AssertionError].withMessage(
+    {
+      List(Person("john", 12)) must_== List(Person("mary", 24))
+    } must throwAn[AssertionError].withMessage(
       """List(john) is not equal to List(mary)
         |Got     : (0).age = 12
         |Expected: (0).age = 24""".stripMargin)
@@ -24,10 +30,12 @@ class FormatterTest extends JunitMatchers {
 
   @Test
   def tupleFormatter(): Unit = {
-    implicit val customPersonFormatter = Formatter[Person]{ _.name }
+    implicit val customPersonFormatter = Formatter[Person] {
+      _.name
+    }
 
     {
-      (Person("john", 13), 12) must_== (Person("john", 12), 12)
+      (Person("john", 13), 12) must_==(Person("john", 12), 12)
     } must throwAn[AssertionError].withMessage(
       """(john,12) is not equal to (john,12)
         |Got     : _1.age = 13
@@ -36,10 +44,12 @@ class FormatterTest extends JunitMatchers {
 
   @Test
   def longListFormatter(): Unit = {
-    {List(
-      Person("this is a looooooooooooooooooooooooooooooooooooooooooooooooo00000000000000000000000000000000ng name", 1234567890),
-      Person("this is a looooooooooooooooooooooooooooooooooooooooooooooooo00000000000000000000000000000000ng name too", 1234567890)
-    ) must_== List(Person("joe", 12))} must throwAn[AssertionError].withMessage(
+    {
+      List(
+        Person("this is a looooooooooooooooooooooooooooooooooooooooooooooooo00000000000000000000000000000000ng name", 1234567890),
+        Person("this is a looooooooooooooooooooooooooooooooooooooooooooooooo00000000000000000000000000000000ng name too", 1234567890)
+      ) must_== List(Person("joe", 12))
+    } must throwAn[AssertionError].withMessage(
       """
         |  List(
         |    Person(this is a looooooooooooooooooooooooooooooooooooooooooooooooo00000000000000000000000000000000ng name,1234567890),
@@ -58,7 +68,7 @@ class FormatterTest extends JunitMatchers {
     // no ordering defined on Person, maps won't be sorted
     {
       Map(Person("mary", 13) -> 12, Person("john", 12) -> 12) must_==
-      Map(Person("john", 12) -> 21, Person("mary", 13) -> 12)
+        Map(Person("john", 12) -> 21, Person("mary", 13) -> 12)
     } must throwAn[AssertionError].withMessage(
       """
         |  Map(Person(mary,13) -> 12, Person(john,12) -> 12)
@@ -89,10 +99,11 @@ class FormatterTest extends JunitMatchers {
 
   // TODO if Formatter implicits gets implemented through macros or if scala changes specificity wrt contravariance
   //      see the note in Formatter
-  @Test @Ignore
+  @Test
+  @Ignore
   def setFormatterShouldSortSetIfPossible(): Unit = {
     {
-      Set(1,2,8,5,4,3) must_== Set(3,4,5,1,6,2,9)
+      Set(1, 2, 8, 5, 4, 3) must_== Set(3, 4, 5, 1, 6, 2, 9)
     } must throwAn[AssertionError].withMessage(
       """Set(1, 2, 3, 4, 5, 8) is not equal to Set(1, 2, 3, 4, 5, 6, 9)
         |Reasons:
@@ -107,9 +118,9 @@ class FormatterTest extends JunitMatchers {
       Map(
         12 -> Person("this is a looooooooooooooooooooooooooooooooooooooooooooooooo00000000000000000000000000000000ng name", 1234567890),
         23 -> Person("john", 12)) must_==
-      Map(
-        23 -> Person("john", 21),
-        12 -> Person("this is a looooooooooooooooooooooooooooooooooooooooooooooooo00000000000000000000000000000000ng name", 1234567890))
+        Map(
+          23 -> Person("john", 21),
+          12 -> Person("this is a looooooooooooooooooooooooooooooooooooooooooooooooo00000000000000000000000000000000ng name", 1234567890))
     } must throwAn[AssertionError].withMessage(
       """
         |  Map(
@@ -130,17 +141,17 @@ class FormatterTest extends JunitMatchers {
   def diffLongElements(): Unit = {
     {
       List(Set(Person("this is a looooooooooooooooooooooooooooooooooooooooooooooooo00000000000000000000000000000000ng name", 1234567890),
-               Person("johnny", 23))) must_==
-      List(Set(Person("johnny", 2345678),
-               Person("this is a looooooooooooooooooooooooooooooooooooooooooooooooo00000000000000000000000000000000ng name", 1234567890),
-               Person("maryjane", 234),
-               Person("toto",1),
-               Person("toto",2),
-               Person("toto",3),
-               Person("toto",4),
-               Person("toto",5),
-               Person("toto",6),
-               Person("toto",7)))
+        Person("johnny", 23))) must_==
+        List(Set(Person("johnny", 2345678),
+          Person("this is a looooooooooooooooooooooooooooooooooooooooooooooooo00000000000000000000000000000000ng name", 1234567890),
+          Person("maryjane", 234),
+          Person("toto", 1),
+          Person("toto", 2),
+          Person("toto", 3),
+          Person("toto", 4),
+          Person("toto", 5),
+          Person("toto", 6),
+          Person("toto", 7)))
     } must throwAn[AssertionError].withMessage(
       """
         |  List(

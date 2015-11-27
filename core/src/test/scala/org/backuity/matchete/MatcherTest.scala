@@ -21,25 +21,29 @@ import org.junit.{ComparisonFailure, Test}
 class MatcherTest extends JunitMatchers {
 
   def typeSafeEqual() {
-    illTyped("""
+    illTyped(
+      """
         List(1,2) must_== Set(1,2)
-    """)
+      """)
 
-    illTyped("""
+    illTyped(
+      """
         List(1,2) must_!= Set(1,2)
-    """)
+      """)
   }
 
   @Test
   def matcherShouldBeContravariant() {
-    Seq(1,2,3) must_== List(1,2,3)
+    Seq(1, 2, 3) must_== List(1, 2, 3)
   }
 
   @Test
   def and() {
     10 must (be_<(100) and be_>(1))
 
-    {5 must (be_<(100) and be_>(10))} must throwAn[AssertionError].withMessage(
+    {
+      5 must (be_<(100) and be_>(10))
+    } must throwAn[AssertionError].withMessage(
       "5 is not > 10")
   }
 
@@ -47,7 +51,9 @@ class MatcherTest extends JunitMatchers {
   def or() {
     10 must (be_>(100) or be_<(20))
 
-    {5 must (be_>(10) or be_<(1))} must throwAn[AssertionError].withMessage(
+    {
+      5 must (be_>(10) or be_<(1))
+    } must throwAn[AssertionError].withMessage(
       "5 is not > 10 and 5 is not < 1")
   }
 }

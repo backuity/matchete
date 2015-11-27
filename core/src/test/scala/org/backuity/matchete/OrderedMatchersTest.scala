@@ -24,7 +24,9 @@ class OrderedMatchersTest extends JunitMatchers {
   def orderedMatchers() {
     "abc" must be_<("bcd")
 
-    {"bcd" must be_<("abc")} must throwAn[AssertionError].withMessage(
+    {
+      "bcd" must be_<("abc")
+    } must throwAn[AssertionError].withMessage(
       "'bcd' is not < 'abc'")
   }
 }

@@ -28,13 +28,13 @@ class ExceptionMatchersTest extends JunitMatchers {
     throw new RuntimeException("Expected an AssertionError but got nothing")
   }
 
-  private def expectAssertionError(msg: String)( f : => Unit ) {
+  private def expectAssertionError(msg: String)(f: => Unit) {
     try {
       f
       failExpectedAssertionError()
     } catch {
-      case e : AssertionError =>
-        if( e.getMessage != msg ) {
+      case e: AssertionError =>
+        if (e.getMessage != msg) {
           throw new ComparisonFailure("Wrong AssertionError message", msg, e.getMessage)
         }
     }
@@ -101,7 +101,7 @@ class ExceptionMatchersTest extends JunitMatchers {
       bug() must throwAn[IllegalArgumentException].withMessage("bla")
       failExpectedAssertionError()
     } catch {
-      case e : ComparisonFailure =>
+      case e: ComparisonFailure =>
         require(e.getActual == "ooops", e.getActual)
         require(e.getExpected == "bla", e.getExpected)
     }
@@ -126,8 +126,8 @@ class ExceptionMatchersTest extends JunitMatchers {
       bug() must throwAn[IllegalArgumentException].withMessageContaining("damn", "expected", "horse", "blue", "content")
       failExpectedAssertionError()
     } catch {
-      case e : AssertionError =>
-        require( e.getMessage == "Exception java.lang.IllegalArgumentException with message 'this does not contain the expected content' " +
+      case e: AssertionError =>
+        require(e.getMessage == "Exception java.lang.IllegalArgumentException with message 'this does not contain the expected content' " +
           "does not contain 'damn', 'horse', 'blue'",
           e.getMessage)
     }
@@ -139,7 +139,7 @@ class ExceptionMatchersTest extends JunitMatchers {
 
     expectAssertionError("Expected java.lang.IllegalStateException but got no exception") {
       noBug() must throwAn[IllegalStateException].like("an illegal state exception") {
-        case e : IllegalStateException =>
+        case e: IllegalStateException =>
       }
     }
   }
@@ -152,7 +152,7 @@ class ExceptionMatchersTest extends JunitMatchers {
 
     expectAssertionError("Expected java.lang.IllegalStateException but got java.lang.IllegalArgumentException: ooops") {
       wrongException() must throwAn[IllegalStateException].like("an illegal state exception") {
-        case e : IllegalStateException =>
+        case e: IllegalStateException =>
       }
     }
   }
@@ -165,7 +165,7 @@ class ExceptionMatchersTest extends JunitMatchers {
 
     // ok
     bug() must throwAn[IllegalStateException].like("an illegal state exception") {
-      case e : IllegalStateException => e.getMessage must contain("check")
+      case e: IllegalStateException => e.getMessage must contain("check")
     }
 
     // ko
@@ -173,7 +173,7 @@ class ExceptionMatchersTest extends JunitMatchers {
       "an java.lang.IllegalStateException like a WTF illegal state exception: " +
       "'some stuff to check' does not contain 'WTF'") {
       bug() must throwAn[IllegalStateException].like("a WTF illegal state exception") {
-        case e : IllegalStateException => e.getMessage must contain("WTF")
+        case e: IllegalStateException => e.getMessage must contain("WTF")
       }
     }
   }
@@ -189,7 +189,7 @@ class ExceptionMatchersTest extends JunitMatchers {
       "an java.lang.IllegalStateException with a dummy message: " +
       "'some stuff to check' does not contain 'WTF'") {
       bug() must throwAn[IllegalStateException].`with`("a dummy message") {
-        case e : IllegalStateException => e.getMessage must contain("WTF")
+        case e: IllegalStateException => e.getMessage must contain("WTF")
       }
     }
   }

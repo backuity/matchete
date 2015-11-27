@@ -18,9 +18,9 @@ object TestUtil {
   final class CustomEqual(val str: String, val int: Int) {
     override def equals(other: Any): Boolean = {
       other match {
-        case otherC : CustomEqual =>
+        case otherC: CustomEqual =>
           otherC.str == this.str &&
-          otherC.int == this.int
+            otherC.int == this.int
       }
     }
 

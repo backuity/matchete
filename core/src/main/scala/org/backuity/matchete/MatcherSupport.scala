@@ -22,12 +22,12 @@ trait CoreMatcherSupport extends FailureReporter with ToMatcherOps {
 
   private class SimpleEagerMatcher[-T](val description: String, validate: T => Boolean, failureDescription: T => String) extends EagerMatcher[T] {
     protected def eagerCheck(t: T) {
-      if( !validate(t) ) fail(failureDescription(t))
+      if (!validate(t)) fail(failureDescription(t))
     }
   }
 
   private class NonNullSimpleEagerMatcher[-T](description: String, validate: T => Boolean, failureDescription: T => String, nullMessage: String) extends
-    SimpleEagerMatcher[T](description, validate, failureDescription) {
+  SimpleEagerMatcher[T](description, validate, failureDescription) {
     override protected def eagerCheck(t: T) {
       failIf(t == null, nullMessage)
       super.eagerCheck(t)
@@ -36,15 +36,15 @@ trait CoreMatcherSupport extends FailureReporter with ToMatcherOps {
 
   private class PartialFunctionMatcher[-T](val description: String, descriptionNegation: String, pf: PartialFunction[T, Unit])(implicit formatter: Formatter[T]) extends EagerMatcher[T] {
     protected def eagerCheck(t: T) {
-      if( pf.isDefinedAt(t) ) {
+      if (pf.isDefinedAt(t)) {
         try {
           pf(t)
         } catch {
           case util.control.NonFatal(e) =>
             val msg = new StringBuilder(formatter.format(t))
             msg.append(" ").append(descriptionNegation).append(":")
-            if( !e.getMessage.startsWith("\n")) {
-             msg.append(" ")
+            if (!e.getMessage.startsWith("\n")) {
+              msg.append(" ")
             }
             msg.append(e.getMessage)
             fail(msg.toString)
@@ -54,45 +54,45 @@ trait CoreMatcherSupport extends FailureReporter with ToMatcherOps {
   }
 
   /**
-   * A null accepting matcher.
-   *
-   * @param description should be the same as the matcher name, for instance haveSize(0) should be "have size 0"
-   * @param validate function that returns true if the value matches the expectation
-   * @param failureDescription called upon failure, return the message thrown
-   */
-  def nullAcceptingMatcher[T](description: String, validate: T => Boolean, failureDescription: T => String) : Matcher[T] =
+    * A null accepting matcher.
+    *
+    * @param description should be the same as the matcher name, for instance haveSize(0) should be "have size 0"
+    * @param validate function that returns true if the value matches the expectation
+    * @param failureDescription called upon failure, return the message thrown
+    */
+  def nullAcceptingMatcher[T](description: String, validate: T => Boolean, failureDescription: T => String): Matcher[T] =
     new SimpleEagerMatcher[T](description, validate, failureDescription)
 
   /**
-   * A non-null matcher.
-   *
-   * @param description should be the same as the matcher name, for instance haveSize(0) should be "have size 0"
-   * @param validate function that returns true if the value matches the expectation
-   * @param failureDescription called upon failure, return the message thrown
-   */
-  def matcher[T](description: String, validate: T => Boolean, failureDescription: T => String, nullMessage : String = "") : Matcher[T] = {
-    val msg = if( nullMessage == "" ) {
-        if( description.startsWith("be") ) {
-          "null is not" + description.substring(2)
-        } else {
-          "null does not " + description
-        }
-      } else nullMessage
+    * A non-null matcher.
+    *
+    * @param description should be the same as the matcher name, for instance haveSize(0) should be "have size 0"
+    * @param validate function that returns true if the value matches the expectation
+    * @param failureDescription called upon failure, return the message thrown
+    */
+  def matcher[T](description: String, validate: T => Boolean, failureDescription: T => String, nullMessage: String = ""): Matcher[T] = {
+    val msg = if (nullMessage == "") {
+      if (description.startsWith("be")) {
+        "null is not" + description.substring(2)
+      } else {
+        "null does not " + description
+      }
+    } else nullMessage
     new NonNullSimpleEagerMatcher[T](description, validate, failureDescription, msg)
   }
 
-  def partialFunctionMatcher[T](description: String, descriptionNegation: String)(pf: PartialFunction[T,Unit])(implicit formatter: Formatter[T]) : Matcher[T] =
+  def partialFunctionMatcher[T](description: String, descriptionNegation: String)(pf: PartialFunction[T, Unit])(implicit formatter: Formatter[T]): Matcher[T] =
     new PartialFunctionMatcher[T](description, descriptionNegation, pf)
-  def partialFunctionMatcher[T](description: String)(pf: PartialFunction[T,Unit])(implicit formatter: Formatter[T]) : Matcher[T] =
+  def partialFunctionMatcher[T](description: String)(pf: PartialFunction[T, Unit])(implicit formatter: Formatter[T]): Matcher[T] =
     new PartialFunctionMatcher[T](description, "is not " + description, pf)
 
-  def a[T : Formatter](description: String)(pf : PartialFunction[T,Unit]) : Matcher[T] = partialFunctionMatcher("a " + description)(pf)
-  def an[T : Formatter](description: String)(pf : PartialFunction[T,Unit]) : Matcher[T] = partialFunctionMatcher("an " + description)(pf)
+  def a[T: Formatter](description: String)(pf: PartialFunction[T, Unit]): Matcher[T] = partialFunctionMatcher("a " + description)(pf)
+  def an[T: Formatter](description: String)(pf: PartialFunction[T, Unit]): Matcher[T] = partialFunctionMatcher("an " + description)(pf)
 
-  def be[T : Formatter](description: String)(pf: PartialFunction[T,Unit]) : Matcher[T] = partialFunctionMatcher("be " + description, "is not " + description)(pf)
-  def beLike[T : Formatter](description: String)(pf: PartialFunction[T,Unit]) : Matcher[T] = be("like " + description)(pf)
+  def be[T: Formatter](description: String)(pf: PartialFunction[T, Unit]): Matcher[T] = partialFunctionMatcher("be " + description, "is not " + description)(pf)
+  def beLike[T: Formatter](description: String)(pf: PartialFunction[T, Unit]): Matcher[T] = be("like " + description)(pf)
 
-  def have[T : Formatter](description: String)(pf: PartialFunction[T,Unit]) : Matcher[T] = partialFunctionMatcher("have " + description, "does not have " + description)(pf)
+  def have[T: Formatter](description: String)(pf: PartialFunction[T, Unit]): Matcher[T] = partialFunctionMatcher("have " + description, "does not have " + description)(pf)
 
   def be[T](m: Matcher[T]) = new EagerMatcher[T] {
     def description: String = "be " + m.description
@@ -104,7 +104,7 @@ trait CoreMatcherSupport extends FailureReporter with ToMatcherOps {
 }
 
 /**
- * Helper to build matchers. Provides core matchers.
- * @see [[org.backuity.matchete.Matchers]]
- */
+  * Helper to build matchers. Provides core matchers.
+  * @see [[org.backuity.matchete.Matchers]]
+  */
 trait MatcherSupport extends CoreMatcherSupport with Matchers

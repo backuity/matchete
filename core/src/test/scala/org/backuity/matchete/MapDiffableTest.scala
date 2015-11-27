@@ -9,12 +9,12 @@ class MapDiffableTest extends JunitMatchers {
   @Test
   def diffMaps_sameKeysDifferentValues(): Unit = {
     val mapA = Map(
-      12 -> Person("john",12),
-      21 -> Person("mary",21))
+      12 -> Person("john", 12),
+      21 -> Person("mary", 21))
 
     val mapB = Map(
-      12 -> Person("john",12),
-      21 -> Person("mary",13))
+      12 -> Person("john", 12),
+      21 -> Person("mary", 13))
 
     {
       mapA must_== mapB
@@ -34,11 +34,11 @@ class MapDiffableTest extends JunitMatchers {
   @Test
   def diffMaps_differentKeys(): Unit = {
     val mapA = Map(
-      12 -> Person("john",12),
-      21 -> Person("mary",21))
+      12 -> Person("john", 12),
+      21 -> Person("mary", 21))
 
     val mapB = Map(
-      12 -> Person("john",12))
+      12 -> Person("john", 12))
 
     {
       mapA must_== mapB

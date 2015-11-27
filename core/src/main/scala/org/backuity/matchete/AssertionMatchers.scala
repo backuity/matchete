@@ -22,7 +22,7 @@ trait AssertionFailureReporter extends FailureReporter {
 }
 
 /**
- * Matchers that throw [[java.lang.AssertionError]] upon failure.
- */
+  * Matchers that throw [[java.lang.AssertionError]] upon failure.
+  */
 trait AssertionMatchers extends Matchers with AssertionFailureReporter with ToMatcherOps
 object assertionMatchers extends AssertionMatchers

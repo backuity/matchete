@@ -23,7 +23,9 @@ class StringMatchersTest extends JunitMatchers {
   def startWith() {
     "john" must startWith("jo")
 
-    {"mary" must startWith("jo")} must throwA[AssertionError].withMessage(
+    {
+      "mary" must startWith("jo")
+    } must throwA[AssertionError].withMessage(
       "'mary' does not start with 'jo'")
   }
 
@@ -36,7 +38,9 @@ class StringMatchersTest extends JunitMatchers {
 
     "\njohn\nis\ntired" must (contain("john") and contain("is") and contain("tired"))
 
-    {"john is tired" must contain("ist")} must throwAn[AssertionError].withMessage(
+    {
+      "john is tired" must contain("ist")
+    } must throwAn[AssertionError].withMessage(
       "'john is tired' does not contain 'ist'")
   }
 }

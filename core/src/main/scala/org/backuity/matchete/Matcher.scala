@@ -17,38 +17,39 @@
 package org.backuity.matchete
 
 
-trait Matcher[-T] { outer =>
+trait Matcher[-T] {
+  outer =>
   /** if t doesn't conform to the matcher then an exception will be raised
     * @return the evaluated `t` - this is used by the negation matcher
     */
-  def check( t : => T) : Any
+  def check(t: => T): Any
 
-  def description : String
+  def description: String
 
   override def toString = description
 
-  def and[U <: T](other: Matcher[U]) : Matcher[U] = new Matcher[U] {
+  def and[U <: T](other: Matcher[U]): Matcher[U] = new Matcher[U] {
     def description = outer.description + " and " + other.description
-    def check(t : => U ) : Any = {
+    def check(t: => U): Any = {
       outer.check(t)
       other.check(t)
     }
   }
 
-  def or[U <: T](other: Matcher[U])(implicit failureReporter: FailureReporter) : Matcher[U] = new Matcher[U] {
+  def or[U <: T](other: Matcher[U])(implicit failureReporter: FailureReporter): Matcher[U] = new Matcher[U] {
     def description = outer.description + " or " + other.description
-    def check(t : => U) : Any = {
+    def check(t: => U): Any = {
       (try {
         outer.check(t)
         None
       } catch {
-        case e : Throwable => Some(e.getMessage)
+        case e: Throwable => Some(e.getMessage)
       },
-      try {
-        other.check(t)
-      } catch {
-        case e : Throwable => Some(e.getMessage)
-      }) match {
+        try {
+          other.check(t)
+        } catch {
+          case e: Throwable => Some(e.getMessage)
+        }) match {
         case (Some(e1), Some(e2)) => failureReporter.fail(e1 + " and " + e2)
         case _ =>
       }
@@ -57,9 +58,9 @@ trait Matcher[-T] { outer =>
 }
 
 trait EagerMatcher[-T] extends Matcher[T] {
-  protected def eagerCheck(t : T)
+  protected def eagerCheck(t: T)
 
-  final def check(t : => T) : Any = {
+  final def check(t: => T): Any = {
     val eval = t
     eagerCheck(eval)
     eval

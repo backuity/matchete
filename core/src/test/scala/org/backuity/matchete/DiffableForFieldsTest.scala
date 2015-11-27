@@ -31,7 +31,7 @@ object DiffableForFieldsTest {
 
     override def equals(other: Any): Boolean = {
       other match {
-        case otherE : EqualOnField1 =>
+        case otherE: EqualOnField1 =>
           this.field1 == otherE.field1
 
         case _ => false

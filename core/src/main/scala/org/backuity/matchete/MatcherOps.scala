@@ -17,16 +17,20 @@
 package org.backuity.matchete
 
 
-class MatcherOps[T](t : => T, reporter: FailureReporter) {
+class MatcherOps[T](t: => T, reporter: FailureReporter) {
 
   private val anyMatchers = new AnyMatchers with FailureReporterDelegate {
     protected val failureReporterDelegate: FailureReporter = reporter
   }
 
-  def must(matcher: Matcher[T])(implicit formatter: Formatter[T]) { matcher.check(t) }
+  def must(matcher: Matcher[T])(implicit formatter: Formatter[T]) {
+    matcher.check(t)
+  }
 
   /** type safe equality */
-  def must_==(other: T)(implicit formatter: Formatter[T], comparator: MatcherComparator[T]) { must(anyMatchers.equalTo(other))}
+  def must_==(other: T)(implicit formatter: Formatter[T], comparator: MatcherComparator[T]) {
+    must(anyMatchers.equalTo(other))
+  }
 
   /** type safe inequality */
   // note: we need a manifest for the not matcher
@@ -35,6 +39,7 @@ class MatcherOps[T](t : => T, reporter: FailureReporter) {
   }
 }
 
-trait ToMatcherOps { this : FailureReporter =>
-  implicit def ToMatcherOpsFromAny[T](t : => T) = new MatcherOps[T](t, this)
+trait ToMatcherOps {
+  this: FailureReporter =>
+  implicit def ToMatcherOpsFromAny[T](t: => T) = new MatcherOps[T](t, this)
 }
