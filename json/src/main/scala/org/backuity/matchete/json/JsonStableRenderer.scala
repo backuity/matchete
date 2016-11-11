@@ -30,11 +30,13 @@ trait JsonStableRenderer {
     case JDouble(n) => text(n.toString)
     case JDecimal(n) => text(n.toString)
     case JInt(n) => text(n.toString)
+    case JLong(n) => text(n.toString)
     case JNull => text("null")
     case JNothing => text("")
     case JString(null) => text("null")
     case JString(s) => text("\"" + ParserUtil.quote(s) + "\"")
     case JArray(arr) => text("[") :: series(trimArr(arr).map(render)) :: text("]")
+    case JSet(set) => text("[") :: series(set.toList.map(render)) :: text("]")
     case JObject(obj) =>
       val nested = break ::
         fields(sortFields(trimObj(obj)).map({ case (n, v) => text("\"" + ParserUtil.quote(n) + "\":") :: render(v)}))
@@ -52,7 +54,7 @@ trait JsonStableRenderer {
   private def fields(docs: List[Document]) = punctuate(text(",") :: break, docs)
 
   private def punctuate(p: Document, docs: List[Document]): Document =
-    if (docs.length == 0) empty
+    if (docs.isEmpty) empty
     else docs.reduceLeft((d1, d2) => d1 :: p :: d2)
 }
 

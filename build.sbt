@@ -1,8 +1,8 @@
 
 lazy val commonSettings = Seq(
   organization := "org.backuity",
-  scalaVersion := "2.11.6",
-
+  scalaVersion := "2.12.0",
+  crossScalaVersions := Seq("2.11.8", "2.12.0"),
   scalacOptions ++= Seq("-deprecation", "-unchecked")
 )
 
@@ -53,10 +53,12 @@ lazy val core = project.in(file("core")).
 
     libraryDependencies ++= Seq(
       "com.novocode"           %  "junit-interface"       % "0.10"      % "test-internal",          
-      "junit"                  %  "junit"                 % "4.10"      % "test")
+      "junit"                  %  "junit"                 % "4.10"      % "test",
+
+      // provide illTyped
+      "com.chuusai"           %% "shapeless"              % "2.3.2"     % "test")
   ).
   settings(releaseSettings : _*).
-  dependsOn(testMacro % "test-internal->compile").
   dependsOn(macros)
 
 lazy val junit = project.in(file("junit")).
@@ -79,7 +81,7 @@ lazy val json = project.in(file("json")).
       libraryDependencies ++= Seq(
         "com.novocode"           %  "junit-interface"       % "0.10"      % "test-internal",
         "junit"                  %  "junit"                 % "4.10"      % "test",
-        "org.json4s"             %% "json4s-native"         % "3.2.9")
+        "org.json4s"             %% "json4s-native"         % "3.5.0")
     ).
     settings(releaseSettings : _*).
     dependsOn(core,junit)
@@ -92,19 +94,10 @@ lazy val xml = project.in(file("xml")).
       libraryDependencies ++= Seq(
         "com.novocode"           %  "junit-interface"       % "0.10"      % "test-internal",
         "junit"                  %  "junit"                 % "4.10"      % "test",
-        "org.scala-lang.modules" %% "scala-xml"             % "1.0.2")
+        "org.scala-lang.modules" %% "scala-xml"             % "1.0.6")
     ).
     settings(releaseSettings : _*).
     dependsOn(core,junit)
-
-// macros need to be compiled separately
-
-// provides illTyped
-lazy val testMacro = project.in(file("test-macro")).
-  settings(commonSettings : _*).
-  settings(
-    libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value
-  )
 
 // provides Diffable
 lazy val macros = project.in(file("macros")).

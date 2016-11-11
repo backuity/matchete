@@ -16,7 +16,8 @@
 
 package org.backuity.matchete
 
-import org.junit.{ComparisonFailure, Test}
+import org.junit.Test
+import shapeless.test.illTyped
 
 class MatcherTest extends JunitMatchers {
 
