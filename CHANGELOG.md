@@ -1,3 +1,7 @@
+## 1.28.0 _(2016-11-14)_
+
+* Release for Scala 2.12
+
 ## 1.25 _(2015-08-10)_
 
 * Make sure `Diffable.forFields[T]` is consistent with `T.equals` 

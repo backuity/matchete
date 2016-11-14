@@ -1,4 +1,4 @@
-matchete [![Build Status](https://travis-ci.org/backuity/matchete.png?branch=master)](https://travis-ci.org/backuity/matchete) [<img src="https://img.shields.io/maven-central/v/org.backuity/matchete-junit_2.11*.svg?label=latest%20release%20for%202.11"/>](http://search.maven.org/#search%7Cga%7C1%7Cg%3Aorg.backuity%20a%3Amatchete-junit_2.11*)
+matchete [![Build Status](https://travis-ci.org/backuity/matchete.png?branch=master)](https://travis-ci.org/backuity/matchete) [<img src="https://img.shields.io/maven-central/v/org.backuity/matchete-junit_2.11*.svg?label=latest%20release%20for%202.11"/>](http://search.maven.org/#search%7Cga%7C1%7Cg%3Aorg.backuity%20a%3Amatchete-junit_2.11*) [<img src="https://img.shields.io/maven-central/v/org.backuity/matchete-junit_2.12*.svg?label=latest%20release%20for%202.12"/>](http://search.maven.org/#search%7Cga%7C1%7Cg%3Aorg.backuity%20a%3Amatchete-junit_2.12*)
 ========
 
 Matchete is a collection of (test) matchers. It is simple, type-safe, concise but yet offers comprehensive error messages. It has no dependencies and is easy to extend.
