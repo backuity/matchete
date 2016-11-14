@@ -100,15 +100,15 @@ object Diffable {
     import c.universe._
     val tpe = implicitly[c.WeakTypeTag[T]].tpe
 
-    def diffField(func: c.Tree, name: Any): c.Tree = {
+    def diffField(func: c.Tree, name: c.TermName): c.Tree = {
       val fieldTpe = func.tpe match {
         case TypeRef(_, _, List(tpe, ftpe)) => ftpe
         case other => c.abort(func.pos, "Unexpected function type, expected " + tpe + " => _ but got " + func.tpe)
       }
       val (fieldNameA, fieldNameB) = (name.toString + "A", name.toString + "B")
       q"""
-           val fA = $func(a)
-           val fB = $func(b)
+           val fA = a.$name
+           val fB = b.$name
 
            implicitly[Diffable[$fieldTpe]].diff(fA, fB) match {
              case Equal => // OK
