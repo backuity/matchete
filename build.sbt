@@ -42,6 +42,7 @@ lazy val releaseSettings = Seq(
 lazy val root = project.in(file(".")).
   settings(releaseSettings : _*).
   settings(
+    name := "matchete",
     publishArtifact := false
   ).
   aggregate(core,junit,json,xml,macros)
@@ -108,3 +109,13 @@ lazy val macros = project.in(file("macros")).
     libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value
   ).
   settings(releaseSettings : _*)
+
+lazy val scalatest = project.in(file("scalatest")).
+  settings(commonSettings: _*).
+  settings(
+    name := "matchete-scalatest",
+
+    libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1"
+  ).
+  settings(releaseSettings: _*).
+  dependsOn(core)

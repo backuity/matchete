@@ -27,4 +27,4 @@ trait JunitFailureReporter extends AssertionFailureReporter {
  * Matchers that throw [[java.lang.AssertionError]] and [[org.junit.ComparisonFailure]] upon failure.
  */
 trait JunitMatchers extends Matchers with JunitFailureReporter with ToMatcherOps
-object junitMatchers extends JunitMatchers
+object junitMatchers1 extends JunitMatchers
