@@ -2,11 +2,7 @@
 lazy val commonSettings = Seq(
   organization := "org.backuity",
   scalaVersion := "2.12.1",
-  crossScalaVersions := Seq("2.11.8", "2.12.1"),
-  scalacOptions ++= Seq("-deprecation", "-unchecked")
-)
-
-lazy val releaseSettings = Seq(
+  scalacOptions ++= Seq("-deprecation", "-unchecked"),
   homepage := Some(url("https://github.com/backuity/matchete")),
   licenses := Seq("Apache 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
 
@@ -40,7 +36,7 @@ lazy val releaseSettings = Seq(
 )
 
 lazy val root = project.in(file(".")).
-  settings(releaseSettings : _*).
+  settings(commonSettings : _*).
   settings(
     publishArtifact := false
   ).
@@ -58,7 +54,6 @@ lazy val core = project.in(file("core")).
       // provide illTyped
       "com.chuusai"           %% "shapeless"              % "2.3.2"     % "test")
   ).
-  settings(releaseSettings : _*).
   dependsOn(macros)
 
 lazy val junit = project.in(file("junit")).
@@ -70,7 +65,6 @@ lazy val junit = project.in(file("junit")).
         "com.novocode"           %  "junit-interface"       % "0.10"      % "test-internal",
         "junit"                  %  "junit"                 % "4.10")
     ).
-    settings(releaseSettings : _*).
     dependsOn(core)
 
 lazy val json = project.in(file("json")).
@@ -83,7 +77,6 @@ lazy val json = project.in(file("json")).
         "junit"                  %  "junit"                 % "4.10"      % "test",
         "org.json4s"             %% "json4s-native"         % "3.5.0")
     ).
-    settings(releaseSettings : _*).
     dependsOn(core,junit)
 
 lazy val xml = project.in(file("xml")).
@@ -96,7 +89,6 @@ lazy val xml = project.in(file("xml")).
         "junit"                  %  "junit"                 % "4.10"      % "test",
         "org.scala-lang.modules" %% "scala-xml"             % "1.0.6")
     ).
-    settings(releaseSettings : _*).
     dependsOn(core,junit)
 
 // provides Diffable
@@ -108,5 +100,4 @@ lazy val macros = project.in(file("macros")).
     libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
       "com.chuusai" %% "shapeless" % "2.3.2")
-  ).
-  settings(releaseSettings : _*)
+  )
