@@ -1,8 +1,8 @@
 
 lazy val commonSettings = Seq(
   organization := "org.backuity",
-  scalaVersion := "2.12.0",
-  crossScalaVersions := Seq("2.11.8", "2.12.0"),
+  scalaVersion := "2.12.1",
+  crossScalaVersions := Seq("2.11.8", "2.12.1"),
   scalacOptions ++= Seq("-deprecation", "-unchecked")
 )
 
@@ -105,6 +105,8 @@ lazy val macros = project.in(file("macros")).
   settings(
     name := "matchete-macros",
 
-    libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value
+    libraryDependencies ++= Seq(
+      "org.scala-lang" % "scala-reflect" % scalaVersion.value,
+      "com.chuusai" %% "shapeless" % "2.3.2")
   ).
   settings(releaseSettings : _*)

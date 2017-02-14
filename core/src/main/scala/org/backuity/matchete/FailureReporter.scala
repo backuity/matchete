@@ -16,6 +16,8 @@
 
 package org.backuity.matchete
 
+import org.backuity.matchete.Diffable.SomeDiff
+
 
 trait FailureReporter {
 
@@ -23,11 +25,21 @@ trait FailureReporter {
   implicit val failureReporter: FailureReporter = this
 
   def fail(msg: String): Nothing
-  final def failIf(expr: Boolean, msg: => String) {
+
+  final def failIf(expr: Boolean, msg: => String): Unit = {
     if (expr) fail(msg)
   }
-  def failIfDifferentStrings(actual: String, expected: String, msg: String) {
+
+  def failIfDifferentStrings(actual: String, expected: String, msg: String): Unit = {
     if (actual != expected) fail(msg)
+  }
+
+  def fail[T](diff: SomeDiff[T])(implicit formatter: Formatter[SomeDiff[T]]): Unit = {
+    val msg = formatter.format(diff)
+    diff.valueA match {
+      case aString: String => failIfDifferentStrings(aString, diff.valueB.asInstanceOf[String], msg)
+      case _ => fail(msg)
+    }
   }
 }
 
@@ -36,7 +48,8 @@ trait FailureReporterDelegate extends FailureReporter {
   protected val failureReporterDelegate: FailureReporter
 
   def fail(msg: String): Nothing = failureReporterDelegate.fail(msg)
-  override def failIfDifferentStrings(actual: String, expected: String, msg: String) {
+
+  override def failIfDifferentStrings(actual: String, expected: String, msg: String): Unit = {
     failureReporterDelegate.failIfDifferentStrings(actual, expected, msg)
   }
 }

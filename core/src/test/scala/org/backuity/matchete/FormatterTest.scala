@@ -14,16 +14,16 @@ class FormatterTest extends JunitMatchers {
     }
 
     {
-      Person("john", 12) must_== Person("mary", 24)
+      Person("john", 12) must_== Person("john", 24)
     } must throwAn[AssertionError].withMessage(
-      """john is not equal to mary
+      """john is not equal to john
         |Got     : age = 12
         |Expected: age = 24""".stripMargin)
 
     {
-      List(Person("john", 12)) must_== List(Person("mary", 24))
+      List(Person("john", 12)) must_== List(Person("john", 24))
     } must throwAn[AssertionError].withMessage(
-      """List(john) is not equal to List(mary)
+      """List(john) is not equal to List(john)
         |Got     : (0).age = 12
         |Expected: (0).age = 24""".stripMargin)
   }

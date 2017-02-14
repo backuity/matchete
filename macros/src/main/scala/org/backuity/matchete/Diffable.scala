@@ -1,6 +1,7 @@
 package org.backuity.matchete
 
-import org.backuity.matchete.Diffable.DiffResult
+import org.backuity.matchete.Diffable.{BasicDiff, DiffResult, Equal}
+import shapeless._
 
 import scala.language.experimental.macros
 import scala.reflect.macros.blackbox
@@ -22,14 +23,19 @@ trait Diffable[T] {
 
   /** @return a DiffResult that must be coherent with equals, that is,
     *         for all a,b : diff(a,b) != Equals iff a != b */
-  def diff(a: T, b: T): DiffResult[T]
+  def diff(a: T, b: T): DiffResult
 }
 
-object Diffable {
+object Diffable extends LabelledTypeClassCompanion[Diffable] {
 
-  sealed trait DiffResult[+T]
-  case object Equal extends DiffResult[Nothing]
-  sealed trait SomeDiff[+T] extends DiffResult[T] {
+  sealed trait DiffResult {
+    def nest[T](a: T, b: T, origin: String): DiffResult = this match {
+      case Equal => Equal
+      case diff: SomeDiff[_] => NestedDiff(a, b, origin, diff)
+    }
+  }
+  case object Equal extends DiffResult
+  sealed trait SomeDiff[+T] extends DiffResult {
     def sourceA: T
     def sourceB: T
 
@@ -61,7 +67,7 @@ object Diffable {
     def formattedValueB = formatter.format(sourceB)
     private[Diffable] def path0(prefix: String): String = prefix
   }
-  case class NestedDiff[+T](sourceA: T, sourceB: T, origin: String, detail: SomeDiff[Any]) extends SomeDiff[T] {
+  case class NestedDiff[+T](sourceA: T, sourceB: T, origin: String, detail: SomeDiff[T]) extends SomeDiff[T] {
     def valueA = detail.valueA
     def valueB = detail.valueB
     def formattedValueA = detail.formattedValueA
@@ -81,13 +87,144 @@ object Diffable {
     def reasons = detail.reasons
   }
 
-  implicit def materializeDiffable[T]: Diffable[T] = macro materializeDiffImpl[T]
+  implicit def intDiffable: Diffable[Int] = primitiveDiffable
+  implicit def booleanDiffable: Diffable[Boolean] = primitiveDiffable
+  implicit def doubleDiffable: Diffable[Double] = primitiveDiffable
+  implicit def floatDiffable: Diffable[Float] = primitiveDiffable
+  implicit def stringDiffable: Diffable[String] = primitiveDiffable
+
+  private def primitiveDiffable[T: Formatter] = new Diffable[T] {
+    override def diff(a: T, b: T): DiffResult = if (a != b) BasicDiff(a, b) else Equal
+  }
+
+  implicit def setDiffable[T : Diffable : Formatter]: Diffable[Set[T]] = new Diffable[Set[T]] {
+    override def diff(a: Set[T], b: Set[T]) = {
+      val formatter = Formatter.traversableContentFormatter[T]
+      val missingElements = b -- a
+      val extraElements = a -- b
+
+      if( missingElements.isEmpty && extraElements.isEmpty ) {
+
+        Equal
+
+      } else if( missingElements.size == 1 && extraElements.size == 1 ) {
+
+        // special case, we'll diff that one element
+        val extra = extraElements.head
+        val missing = missingElements.head
+        Diffable[T].diff(extra, missing) match {
+          case Equal => BasicDiff(a,b) // heck they are different!
+
+          case someDiff : SomeDiff[_] =>
+            val stringDiff = org.backuity.matchete.StringUtil.diff(extra.toString, missing.toString)
+            val label = if (stringDiff.distinct == ".") {
+              "<some-element>"
+            } else stringDiff
+            NestedDiff(a,b,label,someDiff)
+        }
+
+      } else {
+        var reasons : _root_.scala.collection.immutable.List[_root_.java.lang.String] = _root_.scala.collection.immutable.Nil
+        if( missingElements.nonEmpty ) {
+          reasons = ("missing elements: " + Formatter.indent(formatter.format(missingElements), 18, firstLine = false)) :: reasons
+        }
+
+        if( extraElements.nonEmpty ) {
+          reasons = ("extra elements: " + Formatter.indent(formatter.format(extraElements), 16, firstLine = false)) :: reasons
+        }
+
+
+        BasicDiff(a,b,reasons)
+      }
+    }
+  }
+
+  implicit def mapDiffable[K, T: Diffable: Formatter]: Diffable[Map[K,T]] = new Diffable[Map[K, T]] {
+    override def diff(a: Map[K, T], b: Map[K, T]) = {
+      if( a != b ) {
+        val missingKeys = (a.keySet -- b.keySet) ++ (b.keySet -- a.keySet)
+        missingKeys.headOption match {
+          case Some(missingKey) =>
+            NestedDiff(a,b,"get(" + missingKey + ")", BasicDiff(a.get(missingKey),b.get(missingKey)))
+
+          case None =>
+            a.find {
+              case (k, v) => b(k) != v
+            } match {
+              case Some((k,v)) =>
+                Diffable[T].diff(a(k),b(k)) match {
+                  case Equal => BasicDiff(a,b) // shouldn't happen
+                  case diff : SomeDiff[_] => NestedDiff(a,b,"get(" + k + ")",diff)
+                }
+
+              case None => BasicDiff(a,b)
+            }
+        }
+      } else {
+        Equal
+      }
+    }
+  }
+
+  // for some reason this method won't work as implicit
+  def seqLikeDiffable[COL[_] <: Seq[_], T: Diffable: Formatter]: Diffable[COL[T]] = new Diffable[COL[T]] {
+    override def diff(a: COL[T], b: COL[T]): DiffResult = {
+      if (a.size != b.size) {
+        NestedDiff(a,b,"size", BasicDiff(a.size, b.size))
+      } else {
+        // TODO a traverse would be nicer...
+        for (i <- a.indices) {
+          Diffable[T].diff(a(i).asInstanceOf[T], b(i).asInstanceOf[T]) match {
+            case Equal => // OKAY
+            case diff: SomeDiff[Any] => return NestedDiff(a,b,"(" + i + ")",diff)
+          }
+        }
+        Equal
+      }
+    }
+  }
+
+  implicit def listDiffable[T: Diffable: Formatter]: Diffable[List[T]] = seqLikeDiffable
+  implicit def seqDiffable[T: Diffable: Formatter]: Diffable[Seq[T]] = seqLikeDiffable
+
+
+  object typeClass extends LabelledTypeClass[Diffable] {
+    override def coproduct[L, R <: Coproduct](name: String, cl: => Diffable[L], cr: => Diffable[R]): Diffable[:+:[L, R]] = new Diffable[:+:[L, R]] {
+
+      override def diff(a: :+:[L, R], b: :+:[L, R]): DiffResult = {
+        (a, b) match {
+          case (Inl(al), Inl(bl)) => cl.diff(al, bl).nest(al, bl, "")
+          case (Inr(ar), Inr(br)) => cr.diff(ar, br)
+          case (Inr(x), Inl(y)) => BasicDiff(Coproduct.unsafeGet(x), y)
+          case (Inl(x), Inr(y)) => BasicDiff(x, Coproduct.unsafeGet(y))
+        }
+      }
+    }
+
+    override def emptyCoproduct: Diffable[CNil] = (_: CNil, _: CNil) => Equal
+
+    override def product[H, T <: HList](name: String, ch: Diffable[H], ct: Diffable[T]): Diffable[::[H, T]] = new Diffable[H :: T] {
+      override def diff(a: ::[H, T], b: ::[H, T]): DiffResult = {
+        ch.diff(a.head, b.head) match {
+          case diff: SomeDiff[_] => NestedDiff(a.head, b.head, name, diff)
+          case Equal => ct.diff(a.tail, b.tail)
+        }
+      }
+    }
+
+    override def emptyProduct: Diffable[HNil] = (_: HNil, _: HNil) => Equal
+
+    override def project[F, G](instance: => Diffable[G], to: (F) => G, from: (G) => F): Diffable[F] =
+      (a: F, b: F) => {
+        instance.diff(to(a), to(b)).nest(a, b, "")
+      }
+  }
 
   /**
     * Generate a [[Diffable]] based on a list of fields for a type `T`:
     * {{{
     *   class Person(val name: String, val age: String)
-    *   val personDiffable : Diffable[Person] = Diffable.forFields(_.name, _.age)
+    *   val personDiffable: Diffable[Person] = Diffable.forFields(_.name, _.age)
     * }}}
     *
     * @note the resulting Diffable is consistent with the type `T` equals, that is, for
@@ -112,7 +249,7 @@ object Diffable {
 
            implicitly[Diffable[$fieldTpe]].diff(fA, fB) match {
              case Equal => // OK
-             case diff : SomeDiff[Any] =>
+             case diff : SomeDiff[_] =>
                return NestedDiff(a,b,${name.toString},diff)
            }
        """
@@ -130,7 +267,7 @@ object Diffable {
           import _root_.org.backuity.matchete.Diffable
           import Diffable.{DiffResult,Equal,NestedDiff,SomeDiff,BasicDiff}
 
-          def diff(a : $tpe, b : $tpe) : DiffResult[$tpe] = {
+          def diff(a: $tpe, b: $tpe): DiffResult = {
             if( a == b ) {
                Equal
             } else {
@@ -141,158 +278,5 @@ object Diffable {
         }
      """
   }
-
-  def materializeDiffImpl[T: c.WeakTypeTag](c: blackbox.Context): c.Tree = {
-    import c.universe._
-    val tag: WeakTypeTag[T] = implicitly[WeakTypeTag[T]]
-
-    val diffLogic = if (tag.tpe.typeSymbol.isClass &&
-      tag.tpe.typeSymbol.asClass.isCaseClass) {
-
-      materializeCaseClassDiffable(c)(tag)
-    } else if (tag.tpe <:< typeOf[Seq[_]]) {
-      materializeSeqDiffable(c)(tag)
-    } else if (tag.tpe <:< typeOf[Map[_, _]]) {
-      materializeMapDiffable(c)(tag)
-    } else if (tag.tpe <:< typeOf[Set[_]]) {
-      materializeSetDiffable(c)(tag)
-    } else {
-      materializeAnyDiffable(c)
-    }
-
-    q"""new _root_.org.backuity.matchete.Diffable[$tag] {
-            import _root_.org.backuity.matchete.{Diffable, Formatter}
-            import Diffable.{DiffResult,Equal,NestedDiff,SomeDiff,BasicDiff}
-            def diff(a: $tag, b: $tag) : DiffResult[$tag] = {
-              $diffLogic
-            }
-          }
-     """
-  }
-
-  def materializeCaseClassDiffable[T: c.WeakTypeTag](c: blackbox.Context)(tag: c.WeakTypeTag[T]): c.Tree = {
-    import c.universe._
-
-    val caseAttributes = tag.tpe.members.collect {
-      case m: MethodSymbol if m.isCaseAccessor => m
-    }.toList
-
-    val implicits = caseAttributes.map { ca =>
-      q"""implicitly[Diffable[${ca.typeSignature.resultType.asSeenFrom(tag.tpe, tag.tpe.typeSymbol)}]].diff(a.$ca, b.$ca) match {
-               case Equal => // OK
-               case diff : SomeDiff[Any] =>
-                  return NestedDiff(a,b,${ca.name.toString},diff)
-            }
-         """
-    }
-
-    q"""..$implicits
-          Equal
-       """
-  }
-
-  def materializeSeqDiffable[T: c.WeakTypeTag](c: blackbox.Context)(tag: c.WeakTypeTag[T]): c.Tree = {
-    import c.universe._
-    // uses the index as the path element
-    val elementType = tag.tpe.typeArgs.head
-    q"""
-        if( a.size != b.size ) {
-          NestedDiff(a,b,"size", BasicDiff(a.size, b.size))
-        } else {
-          for( i <- 0 until a.size ) {
-            implicitly[Diffable[$elementType]].diff(a(i), b(i)) match {
-              case Equal => // OKAY
-
-              case diff : SomeDiff[Any] => return NestedDiff(a,b,"(" + i + ")",diff)
-            }
-          }
-          Equal
-        }
-    """
-  }
-
-  def materializeSetDiffable[T: c.WeakTypeTag](c: blackbox.Context)(tag: c.WeakTypeTag[T]): c.Tree = {
-    import c.universe._
-    "aha".diff("haha")
-    val elementType = tag.tpe.typeArgs.head
-    q"""
-        val formatter = Formatter.traversableContentFormatter[$elementType]
-        val missingElements = b -- a
-        val extraElements = a -- b
-
-        if( missingElements.isEmpty && extraElements.isEmpty ) {
-
-          Equal
-
-        } else if( missingElements.size == 1 && extraElements.size == 1 ) {
-
-          // special case, we'll diff that one element
-          val extra = extraElements.head
-          val missing = missingElements.head
-          implicitly[Diffable[$elementType]].diff(extra, missing) match {
-            case Equal => BasicDiff(a,b) // heck they are different!
-
-            case someDiff : SomeDiff[Any] =>
-              val stringDiff = org.backuity.matchete.StringUtil.diff(extra.toString, missing.toString)
-              val label = if (stringDiff.distinct == ".") {
-                "<some-element>"
-              } else stringDiff
-              NestedDiff(a,b,label,someDiff)
-          }
-
-        } else {
-          var reasons : _root_.scala.collection.immutable.List[_root_.java.lang.String] = _root_.scala.collection.immutable.Nil
-          if( missingElements.nonEmpty ) {
-            reasons = ("missing elements: " + Formatter.indent(formatter.format(missingElements), 18, firstLine = false)) :: reasons
-          }
-
-          if( extraElements.nonEmpty ) {
-            reasons = ("extra elements: " + Formatter.indent(formatter.format(extraElements), 16, firstLine = false)) :: reasons
-          }
-
-          BasicDiff(a,b,reasons)
-        }
-    """
-  }
-
-  def materializeMapDiffable[T: c.WeakTypeTag](c: blackbox.Context)(tag: c.WeakTypeTag[T]): c.Tree = {
-    import c.universe._
-    val valueType: c.Type = tag.tpe.typeArgs(1)
-    q"""
-        if( a != b ) {
-          val missingKeys = (a.keySet -- b.keySet) ++ (b.keySet -- a.keySet)
-          missingKeys.headOption match {
-            case Some(missingKey) =>
-              NestedDiff(a,b,"get(" + missingKey + ")", BasicDiff(a.get(missingKey),b.get(missingKey)))
-
-            case None =>
-              (a.find {
-                case (k,v) => b(k) != v
-              }) match {
-                case Some((k,v)) =>
-                  implicitly[Diffable[$valueType]].diff(a(k),b(k)) match {
-                    case Equal => BasicDiff(a,b) // shouldn't happen
-
-                    case diff : SomeDiff[Any] => NestedDiff(a,b,"get(" + k + ")",diff)
-                  }
-
-                case None => BasicDiff(a,b)
-              }
-          }
-        } else {
-          Equal
-        }
-     """
-  }
-
-  def materializeAnyDiffable[T: c.WeakTypeTag](c: blackbox.Context): c.Tree = {
-    import c.universe._
-    q"""if( a != b ) {
-          BasicDiff(a, b)
-        } else {
-          Equal
-        }
-    """
-  }
-
 }
+

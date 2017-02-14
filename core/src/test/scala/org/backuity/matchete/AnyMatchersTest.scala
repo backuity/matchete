@@ -33,9 +33,9 @@ class AnyMatchersTest extends JunitMatchers {
     "john" must_== "john"
 
     {
-      Person("john", 12) must beEqualTo(Person("mary", 21))
+      Person("john", 12) must beEqualTo(Person("john", 21))
     } must throwAn[AssertionError].withMessage(
-      """Person(john,12) is not equal to Person(mary,21)
+      """Person(john,12) is not equal to Person(john,21)
         |Got     : age = 12
         |Expected: age = 21""".stripMargin)
 

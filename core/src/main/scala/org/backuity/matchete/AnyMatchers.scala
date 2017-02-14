@@ -27,7 +27,7 @@ trait MatcherComparator[-T] {
   def checkEqual(actual: T, expected: T): Unit
 }
 
-trait AnyMatchers extends CoreMatcherSupport {
+trait AnyMatchers extends CoreMatcherSupport with LowPriorityComparator {
 
   // TODO move that to the Diffable materializer
   implicit def arrayComparator[T](implicit arrayFormatter: Formatter[Array[T]]) = new MatcherComparator[Array[T]] {
@@ -38,17 +38,12 @@ trait AnyMatchers extends CoreMatcherSupport {
     }
   }
 
-  implicit def anyComparator[T](implicit formatter: Formatter[SomeDiff[T]], diffable: Diffable[T]) = new MatcherComparator[T] {
+  implicit def diffComparator[T](implicit formatter: Formatter[SomeDiff[T]], diffable: Diffable[T]) = new MatcherComparator[T] {
     def checkEqual(actual: T, expected: T): Unit = {
-      val diff: DiffResult[T] = diffable.diff(actual, expected)
+      val diff: DiffResult = diffable.diff(actual, expected)
       diff match {
         case Equal => // no-op
-        case diff: SomeDiff[T] =>
-          val msg = formatter.format(diff)
-          diff.valueA match {
-            case aString: String => failIfDifferentStrings(aString, diff.valueB.asInstanceOf[String], msg)
-            case _ => fail(msg)
-          }
+        case diff: SomeDiff[_] => fail(diff.asInstanceOf[SomeDiff[T]])
       }
     }
   }
@@ -163,4 +158,14 @@ trait AnyMatchers extends CoreMatcherSupport {
     failureDescription = (any: Any) => s"$any is not a ${manifest[T].runtimeClass.getCanonicalName} it is a ${any.getClass.getCanonicalName}")
 
   def a[T: Manifest] = beA[T]
+}
+
+trait LowPriorityComparator extends FailureReporter {
+  implicit def anyComparator[T](implicit formatter: Formatter[T]): MatcherComparator[T] = new MatcherComparator[T] {
+    override def checkEqual(actual: T, expected: T): Unit = {
+      if (actual != expected) {
+        fail(BasicDiff(actual, expected))
+      }
+    }
+  }
 }

@@ -26,7 +26,7 @@ class DiffableForFieldsTest extends JunitMatchers {
 }
 
 object DiffableForFieldsTest {
-  class EqualOnField1(val field1: String, val field2: String) {
+  class EqualOnField1(private val field1: String, val field2: String) {
     override def hashCode(): Int = 17 * field1.hashCode
 
     override def equals(other: Any): Boolean = {

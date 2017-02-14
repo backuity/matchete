@@ -1,6 +1,6 @@
 package org.backuity.matchete
 
-import scala.collection.{mutable, Seq, GenSeq}
+import scala.collection.{Seq, mutable}
 
 object StringUtil {
 
