@@ -1,6 +1,6 @@
 package org.backuity.matchete
 
-import org.backuity.matchete.TestUtil.{Bike, Flower, Person, Stuff}
+import org.backuity.matchete.TestUtil.Person
 import org.junit.Test
 
 class DerivedDiffableTest extends JunitMatchers {
