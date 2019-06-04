@@ -30,7 +30,7 @@ class TraversableMatchersTest extends JunitMatchers {
     List(2, 4, 6, 8) must forAll(be_<(10) and beLike("an even number") { case n if n % 2 == 0 => })
     Set(2, 4, 6, 8) must forAll(be_<(10) and beLike("an even number") { case n if n % 2 == 0 => })
 
-    List() must forAll(be_<(10))
+    List[Int]() must forAll(be_<(10))
 
     {
       List(1, 2, 30, 40) must forAll(be_<(10))
@@ -51,7 +51,7 @@ class TraversableMatchersTest extends JunitMatchers {
     List(1, 2, 3) must contain(be_<(2), be_<(2))
 
     {
-      List() must contain(be_<(2))
+      List[Int]() must contain(be_<(2))
     } must throwAn[AssertionError].withMessage(
       "List() does not contain be < 2")
 
@@ -71,7 +71,7 @@ class TraversableMatchersTest extends JunitMatchers {
         |  * Person(josephine,12) is not an 'm' starting name: 'josephine' does not start with 'm'
         |  * Person(joseph,7) is not an 'm' starting name: 'joseph' does not start with 'm'""".stripMargin)
 
-    List() must not(contain(be_<(5), be_>(10)))
+    List[Int]() must not(contain(be_<(5), be_>(10)))
     List(8) must not(contain(be_<(5), be_>(10)))
 
     {
@@ -200,7 +200,7 @@ class TraversableMatchersTest extends JunitMatchers {
 
     // 1.b) no elements
     {
-      List() must containExactly(be_<(3))
+      List[Int]() must containExactly(be_<(3))
     } must throwAn[AssertionError].withMessage(
       "List() has size 0 but expected size 1 -- does not contain be < 3")
 

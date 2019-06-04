@@ -32,7 +32,7 @@ trait AnyMatchers extends CoreMatcherSupport with LowPriorityComparator {
   // TODO move that to the Diffable materializer
   implicit def arrayComparator[T](implicit arrayFormatter: Formatter[Array[T]]) = new MatcherComparator[Array[T]] {
     def checkEqual(actualArr: Array[T], expectedArr: Array[T]) {
-      if (expectedArr.deep != actualArr.deep) {
+      if (expectedArr.toSeq != actualArr.toSeq) {
         fail(s"${arrayFormatter.format(actualArr)} is not equal to ${arrayFormatter.format(expectedArr)}")
       }
     }

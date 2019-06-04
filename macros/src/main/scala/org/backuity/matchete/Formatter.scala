@@ -31,7 +31,7 @@ object Formatter extends UnorderedMapFormatter {
 
   implicit val stringFormatter : Formatter[String] = Formatter[String]{ s => s"'$s'" }
 
-  implicit def arrayFormatter[T] : Formatter[Array[T]] = Formatter[Array[T]]{ _.deep.toString }
+  implicit def arrayFormatter[T] : Formatter[Array[T]] = Formatter[Array[T]]{ _.toSeq.toString }
 
   implicit def orderedMapFormatter[K : Formatter : Ordering,V : Formatter] : Formatter[Map[K,V]] = new Formatter[Map[K, V]] {
     override def format(t: Map[K, V]): String = {
@@ -142,8 +142,15 @@ trait FormatterLowPriorityImplicits {
     override def format(t: Traversable[T]): String = {
       val formattedElements = t.map(elem => formatter.format(elem))
       val formattedElementsString = formattedElements.mkString(", ")
+      val prefix = t match {
+        case _: List[_] => "List"
+        case _: Seq[_] => "Seq"
+        case _: Set[_] => "Set"
+        case _: Map[_,_] => "Map"
+        case _     => "Traversable"
+      }
       val draft = if( printCollectionName ) {
-        s"${t.stringPrefix}($formattedElementsString)"
+        s"$prefix($formattedElementsString)"
       } else {
         formattedElementsString
       }
@@ -154,7 +161,7 @@ trait FormatterLowPriorityImplicits {
         // multiline display
         val formattedElementsString = formattedElements.mkString(",\n")
         val oneElementPerLine = if( printCollectionName ) {
-          t.stringPrefix + "(\n" + indent(formattedElementsString, 2) + ")"
+          prefix + "(\n" + indent(formattedElementsString, 2) + ")"
         } else {
           formattedElementsString
         }

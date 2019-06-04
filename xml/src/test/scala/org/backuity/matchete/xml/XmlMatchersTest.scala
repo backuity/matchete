@@ -59,10 +59,7 @@ class XmlMatchersTest extends JunitMatchers with XmlMatchers {
     {person \ "person" must containExactly(
       a("john jr 1") { case jr => jr must haveAttribute("age", equalTo("10"))},
       an("old junior") { case jr => jr must haveAttribute("age", equalTo("21"))})} must throwAn[AssertionError].withMessage(
-      """NodeSeq(<person name="john jr. 1" age="12"/>, <person name="john jr. 2" age="10"/>)
-        |
-        |has unexpected elements:
-        |<person name="john jr. 1" age="12"/> :
+      """Seq(<person name="john jr. 1" age="12"/>, <person name="john jr. 2" age="10"/>) has unexpected elements <person name="john jr. 1" age="12"/> :
         |  * is not a john jr 1: <person age="12" name="john jr. 1"> attribute 'age' is not valid: '12' is not equal to '10' expected:<1[0]> but was:<1[2]>
         |  * is not an old junior: <person age="12" name="john jr. 1"> attribute 'age' is not valid: '12' is not equal to '21' expected:<[21]> but was:<[12]>
       """.stripMargin.trim)

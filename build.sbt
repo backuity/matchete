@@ -1,7 +1,8 @@
 
 lazy val commonSettings = Seq(
   organization := "org.backuity",
-  scalaVersion := "2.12.1",
+  scalaVersion := "2.13.0-RC3",
+  crossScalaVersions := Seq("2.12.8", "2.13.0-RC3"),
   scalacOptions ++= Seq("-deprecation", "-unchecked"),
   homepage := Some(url("https://github.com/backuity/matchete")),
   licenses := Seq("Apache 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
@@ -75,7 +76,7 @@ lazy val json = project.in(file("json")).
       libraryDependencies ++= Seq(
         "com.novocode"           %  "junit-interface"       % "0.10"      % "test-internal",
         "junit"                  %  "junit"                 % "4.10"      % "test",
-        "org.json4s"             %% "json4s-native"         % "3.5.0")
+        "org.json4s"             %% "json4s-native"         % "3.6.6")
     ).
     dependsOn(core,junit)
 
@@ -87,7 +88,7 @@ lazy val xml = project.in(file("xml")).
       libraryDependencies ++= Seq(
         "com.novocode"           %  "junit-interface"       % "0.10"      % "test-internal",
         "junit"                  %  "junit"                 % "4.10"      % "test",
-        "org.scala-lang.modules" %% "scala-xml"             % "1.0.6")
+        "org.scala-lang.modules" %% "scala-xml"             % "1.2.0")
     ).
     dependsOn(core,junit)
 
@@ -99,5 +100,5 @@ lazy val macros = project.in(file("macros")).
 
     libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-      "com.chuusai" %% "shapeless" % "2.3.2")
+      "com.chuusai" %% "shapeless" % "2.3.3")
   )
