@@ -17,7 +17,7 @@ lazy val commonSettings = Seq(
       Some("releases"  at nexus + "service/local/staging/deploy/maven2")
   },
 
-  // replace publish by publishSigned
+  useGpg := true,
   publish := PgpKeys.publishSigned.value,
 
   pomIncludeRepository := { _ => false },
