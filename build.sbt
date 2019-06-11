@@ -1,8 +1,8 @@
 
 lazy val commonSettings = Seq(
   organization := "org.backuity",
-  scalaVersion := "2.13.0-RC3",
-  crossScalaVersions := Seq("2.12.8", "2.13.0-RC3"),
+  scalaVersion := "2.13.0",
+  crossScalaVersions := Seq("2.12.8", "2.13.0"),
   scalacOptions ++= Seq("-deprecation", "-unchecked"),
   homepage := Some(url("https://github.com/backuity/matchete")),
   licenses := Seq("Apache 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
